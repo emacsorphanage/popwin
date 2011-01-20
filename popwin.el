@@ -21,7 +21,7 @@
 
 ;;; Commentary:
 
-;; Popwin makes you free from a hell of annoying buffers such like
+;; Popwin makes you free from the hell of annoying buffers such like
 ;; *Help*, *Completetions*, *compilation*, and etc.
 ;; 
 ;; To use popwin, just add the following code into your .emacs:
@@ -366,8 +366,8 @@ popup window will be replaced with BUFFER."
 `popwin:display-buffer' and
 `popwin:special-display-popup-window'. The value is a list
 of (BUFFER . KEYWORDS) where BUFFER is a specifying buffer name
-and KEYWORDS is a list of a pair of key and value. Available key
-are following:
+and KEYWORDS is a list of a pair of key and value. Available
+keyword are following:
 
   regexp: If the value is non-nil, BUFNAME will be used as regexp
     to match buffer names.
