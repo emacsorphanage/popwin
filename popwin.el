@@ -365,12 +365,13 @@ popup window will be replaced with BUFFER."
   "Configuration of special displaying buffer for
 `popwin:display-buffer' and
 `popwin:special-display-popup-window'. The value is a list
-of (BUFFER . KEYWORDS) where BUFFER is a specifying buffer name
-and KEYWORDS is a list of a pair of key and value. Available
-keyword are following:
+of (PATTERN . KEYWORDS) where PATTERN is a pattern of specifying
+buffer and KEYWORDS is a list of a pair of key and value. PATTERN
+is in general a buffer name, otherwise a symbol specifying
+major-mode of buffer. Available keyword are following:
 
-  regexp: If the value is non-nil, BUFNAME will be used as regexp
-    to match buffer names.
+  regexp: If the value is non-nil, PATTERN will be used as regexp
+    to matching buffer.
 
   width, height: Specify width or height of the popup window. If
     no size specified, `popwin:popup-window-width' or
@@ -383,7 +384,12 @@ keyword are following:
     used.
 
   noselect: If the value is non-nil, the popup window will not be
-    selected when it is shown."
+    selected when it is shown.
+
+Examples: With '(\"*scratch*\" :height 30 :position top),
+*scratch* buffer will be shown at the top of the frame with
+height 30. With '(dired-mode :width 80 :position left), dired
+buffers will be shown at the left of the frame with width 80."
   :group 'popwin)
 
 (defun popwin:original-display-buffer (buffer)
@@ -393,6 +399,7 @@ keyword are following:
 
 (defun* popwin:display-buffer-1 (buffer &key if-config-not-found)
   (loop with name = (buffer-name buffer)
+        with mode = (with-current-buffer buffer major-mode)
         with win-width = popwin:popup-window-width
         with win-height = popwin:popup-window-height
         with win-position = popwin:popup-window-position
@@ -402,14 +409,22 @@ keyword are following:
         for (pattern . keywords) in popwin:special-display-config do
         (destructuring-bind (&key regexp width height position noselect)
             keywords
-          (if (if regexp
-                  (string-match pattern name)
-                (string= pattern name))
-              (setq found t
-                    win-width (or width win-width)
-                    win-height (or height win-height)
-                    win-position (or position win-position)
-                    win-noselect noselect)))
+          (let ((matched
+                 (cond
+                  ((and (stringp pattern)
+                        regexp)
+                   (string-match pattern name))
+                  ((stringp pattern)
+                   (string= pattern name))
+                  ((symbolp pattern)
+                   (eq pattern mode))
+                  (t (error "Invalid pattern: %s" pattern)))))
+            (if matched
+                (setq found t
+                      win-width (or width win-width)
+                      win-height (or height win-height)
+                      win-position (or position win-position)
+                      win-noselect noselect))))
         finally return
         (if (or found
                 (null if-config-not-found))
