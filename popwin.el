@@ -26,6 +26,7 @@
 ;; 
 ;; To use popwin, just add the following code into your .emacs:
 ;; 
+;;     (require 'popwin)
 ;;     (setq display-buffer-function 'popwin:display-buffer)
 ;; 
 ;; Then try to show some buffer, for example *Help* or
@@ -43,6 +44,7 @@
 ;; Instead of a recommended way, you can also use popwin by setting
 ;; `special-display-function' like:
 ;;
+;;     (require 'popwin)
 ;;     (setq special-display-function
 ;;           'popwin:special-display-popup-window)
 ;;
@@ -192,9 +194,9 @@ top-offset)."
 
 (defun* popwin:create-popup-window (&optional (size 15) (position 'bottom) (adjust t))
   "Create a popup window with SIZE on the frame. If ADJUST is t,
-all of windows will be factord to fit the frame. POSITION must be
-one of (left top right bottom). The return value is a pair of a
-master window and the popup window. To close the popup window
+all of windows will be adjusted to fit the frame. POSITION must
+be one of (left top right bottom). The return value is a pair of
+a master window and the popup window. To close the popup window
 properly, get `current-window-configuration' before calling this
 function, and call `set-window-configuration' with the
 window-configuration."
