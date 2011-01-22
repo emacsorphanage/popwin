@@ -176,8 +176,8 @@ which is a node of `window-tree' and OUTLINE which is a node of
 return value is a list of a master window, the popup window,
 offsets of the master window in a form of (left-offset
 top-offset)."
-  (let* ((width (window-width window))
-         (height (window-height window)))
+  (let ((width (window-width window))
+        (height (window-height window)))
     (ecase position
       (left   (list (split-window window size t)
                     window
@@ -257,6 +257,9 @@ frame when a popup window is shown."
   "Focused window which is used to check whether or not to close
 the popup window.")
 
+(defvar popwin:selected-window nil
+  "Last selected window when the popup window is shown.")
+
 (defvar popwin:window-outline nil
   "Original window outline which is obtained by
 `popwin:window-config-tree'.")
@@ -289,9 +292,10 @@ the popup window.")
        (popwin:should-close-popup-window-p))
     (error (message "popwin:close-popup-window-timer: error: %s" var))))
 
-(defun popwin:close-popup-window ()
+(defun popwin:close-popup-window (&optional keep-selected)
   "Close the popup window and restore to the previous window
-configuration."
+configuration. If KEEP-SELECTED is non-nil, the lastl selected
+window will not be selected."
   (unwind-protect
       (when popwin:popup-window
         (popwin:stop-close-popup-window-timer)
@@ -299,10 +303,14 @@ configuration."
                  (window-live-p popwin:master-window))
             (delete-window popwin:popup-window))
         (popwin:restore-window-outline (car (window-tree))
-                                       popwin:window-outline))
+                                       popwin:window-outline)
+        (if (and (not keep-selected)
+                 (window-live-p popwin:selected-window))
+            (select-window popwin:selected-window)))
     (setq popwin:popup-buffer nil
           popwin:popup-window nil
           popwin:focus-window nil
+          popwin:selected-window nil
           popwin:window-outline nil)))
 
 (defun popwin:should-close-popup-window-p ()
@@ -316,14 +324,18 @@ function."
 (defun popwin:close-popup-window-if-necessary (&optional force)
   "Close the popup window if another window has been selected. If
 FORCE is non-nil, this function tries to close the popup window
-immediately if possible."
-  (let ((window (selected-window)))
-    (if (and popwin:popup-window
-             (not (eq window (minibuffer-window)))
-             (or force
-                 (and (not (eq window popwin:focus-window))
-                      (not (eq window popwin:popup-window)))))
-        (popwin:close-popup-window))))
+immediately if possible, and the lastly selected window will be
+selected again."
+  (when popwin:popup-window
+    (let* ((window (selected-window))
+           (minibuf-window-p (eq window (minibuffer-window)))
+           (other-window-selected
+            (and (not (eq window popwin:focus-window))
+                 (not (eq window popwin:popup-window)))))
+      (if (and (not minibuf-window-p)
+               (or force other-window-selected))
+          (popwin:close-popup-window
+           other-window-selected)))))
 
 (defun* popwin:popup-buffer (buffer
                              &key
@@ -339,16 +351,17 @@ popup window will be replaced with BUFFER."
   (unless (popwin:popup-window-live-p)
     (let ((win-outline (car (popwin:window-config-tree))))
       (destructuring-bind (master-win popup-win)
-          (let* ((size (if (popwin:position-horizontal-p position) width height))
-                 (adjust popwin:adjust-other-windows))
+          (let ((size (if (popwin:position-horizontal-p position) width height))
+                (adjust popwin:adjust-other-windows))
             (popwin:create-popup-window size position adjust))
         (setq popwin:popup-window popup-win
               popwin:master-window master-win
               popwin:window-outline win-outline)
         (popwin:start-close-popup-window-timer))))
   (setq popwin:popup-buffer buffer
-        popwin:focus-window (if noselect
-                                (selected-window)
+        popwin:selected-window (selected-window))
+  (setq popwin:focus-window (if noselect
+                                popwin:selected-window
                               popwin:popup-window))
   (with-selected-window popwin:popup-window
     (switch-to-buffer buffer))
@@ -381,7 +394,7 @@ major-mode of buffer. Available keyword are following:
     keyword.
 
   position: The value must be one of (left top right bottom). The
-    popup window will showed at the position of the frame.  If no
+    popup window will shown at the position of the frame.  If no
     position specified, `popwin:popup-window-position' will be
     used.
 
@@ -394,10 +407,11 @@ height 30. With '(dired-mode :width 80 :position left), dired
 buffers will be shown at the left of the frame with width 80."
   :group 'popwin)
 
-(defun popwin:original-display-buffer (buffer)
+(defun popwin:original-display-buffer (buffer &optional not-this-window)
   "Call `display-buffer' for BUFFER without special displaying."
   (let (display-buffer-function special-display-function)
-    (display-buffer buffer)))
+    (popwin:close-popup-window)
+    (display-buffer buffer not-this-window)))
 
 (defun* popwin:display-buffer-1 (buffer &key if-config-not-found)
   (loop with name = (buffer-name buffer)
@@ -437,10 +451,10 @@ buffers will be shown at the left of the frame with width 80."
                                  :noselect (or (minibufferp) win-noselect))
           (funcall if-config-not-found buffer))))
 
-(defun popwin:display-buffer (buffer flag)
+(defun popwin:display-buffer (buffer &optional not-this-window)
   "The `display-buffer-function' with a popup window."
   (if (popwin:popup-window-live-p)
-      (popwin:original-display-buffer buffer)
+      (popwin:original-display-buffer buffer not-this-window)
     (popwin:display-buffer-1
      buffer
      :if-config-not-found 'popwin:original-display-buffer)))
