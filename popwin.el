@@ -453,17 +453,13 @@ buffers will be shown at the left of the frame with width 80."
 
 (defun popwin:display-buffer (buffer &optional not-this-window)
   "The `display-buffer-function' with a popup window."
-  (if (popwin:popup-window-live-p)
-      (popwin:original-display-buffer buffer not-this-window)
-    (popwin:display-buffer-1
-     buffer
-     :if-config-not-found 'popwin:original-display-buffer)))
+  (popwin:display-buffer-1
+   buffer
+   :if-config-not-found 'popwin:original-display-buffer))
 
 (defun popwin:special-display-popup-window (buffer &rest ignore)
   "The `special-display-function' with a popup window."
-  (if (popwin:popup-window-live-p)
-      (popwin:original-display-buffer buffer)
-    (popwin:display-buffer-1 buffer)))
+  (popwin:display-buffer-1 buffer))
 
 (provide 'popwin)
 ;;; popwin.el ends here
