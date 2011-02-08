@@ -22,7 +22,7 @@
 ;;; Commentary:
 
 ;; Popwin makes you free from the hell of annoying buffers such like
-;; *Help*, *Completetions*, *compilation*, and etc.
+;; *Help*, *Completions*, *compilation*, and etc.
 ;; 
 ;; To use popwin, just add the following code into your .emacs:
 ;; 
@@ -319,6 +319,7 @@ immediately. It might be useful if this is customizable
 function."
   (and popwin:popup-window
        (or (eq last-command 'keyboard-quit)
+           (eq real-last-command 'keyboard-quit)
            (popwin:buried-buffer-p popwin:popup-buffer))))
 
 (defun popwin:close-popup-window-if-necessary (&optional force)

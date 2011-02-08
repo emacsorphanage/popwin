@@ -1,7 +1,7 @@
 popwin.el
 =========
 
-popwin is popup window manager for Emacs which makes you free from the
+popwin is a popup window manager for Emacs which makes you free from the
 hell of annoying buffers such like `*Help*`, `*Completions*`,
 `*compilation*`, and etc.
 
@@ -19,7 +19,7 @@ There is an alternative way using `special-display-function` like:
     (setq special-display-function 'popwin:special-display-popup-window)
 
 In this case, you need to change `special-display-buffer-names` or
-`special-display-regexps` so that popwin takes care of such buffers.
+`special-display-regexps` so that popwin sould handle such buffers.
 
 popwin is tested under GNU Emacs 22 or later.
 
@@ -34,7 +34,7 @@ Customization
 -------------
 
 Please do `M-x customize-group RET popwin RET`. See the header of
-`popwin.el`, source code, and docstring for more information.
+`popwin.el`, source code, and docstrings for more information.
 
 ----
 
