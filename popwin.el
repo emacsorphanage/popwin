@@ -240,7 +240,7 @@ bottom)."
 is top or bottom, this configuration will be ignored. If this
 variable is float, the popup window width will be a multiplier of
 the value and frame-size."
-  :type 'integer
+  :type 'number
   :group 'popwin)
 
 (defcustom popwin:popup-window-height 15
@@ -248,7 +248,7 @@ the value and frame-size."
 is left or right, this configuration will be ignored. If this
 variable is float, the popup window height will be a multiplier
 of the value and frame-size."
-  :type 'integer
+  :type 'number
   :group 'popwin)
 
 (defcustom popwin:adjust-other-windows t
