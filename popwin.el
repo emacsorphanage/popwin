@@ -109,7 +109,7 @@ factor HFACTOR, and vertical factor VFACTOR."
             (eq (selected-window) node))
     (destructuring-bind (dir edges . windows) node
       (append (list dir edges)
-              (mapcar 'popwin:window-config-tree-1 windows)))))
+              (mapcar #'popwin:window-config-tree-1 windows)))))
 
 (defun popwin:window-config-tree ()
   "Return `window-tree' with replacing window values in the tree
@@ -248,7 +248,7 @@ frame when a popup window is shown."
   "Main popup window instance.")
 
 (defvar popwin:popup-buffer nil
-  "Buffer of lastly shown in the popup window.")
+  "Buffer of currently shown in the popup window.")
 
 (defvar popwin:master-window nil
   "Master window of a popup window.")
@@ -279,7 +279,7 @@ the popup window.")
       (setq popwin:close-popup-window-timer
             (run-with-timer popwin:close-popup-window-timer-interval
                             popwin:close-popup-window-timer-interval
-                            'popwin:close-popup-window-timer))))
+                            #'popwin:close-popup-window-timer))))
 
 (defun popwin:stop-close-popup-window-timer ()
   (when popwin:close-popup-window-timer
@@ -360,8 +360,8 @@ popup window will be replaced with BUFFER."
               popwin:window-outline win-outline)
         (popwin:start-close-popup-window-timer))))
   (setq popwin:popup-buffer buffer
-        popwin:selected-window (selected-window))
-  (setq popwin:focus-window (if noselect
+        popwin:selected-window (selected-window)
+        popwin:focus-window (if noselect
                                 popwin:selected-window
                               popwin:popup-window))
   (with-selected-window popwin:popup-window
@@ -408,6 +408,9 @@ height 30. With '(dired-mode :width 80 :position left), dired
 buffers will be shown at the left of the frame with width 80."
   :group 'popwin)
 
+(defvar popwin:last-display-buffer nil
+  "The lastly displayed buffer.")
+
 (defun popwin:original-display-buffer (buffer &optional not-this-window)
   "Call `display-buffer' for BUFFER without special displaying."
   (let (display-buffer-function special-display-function)
@@ -415,7 +418,8 @@ buffers will be shown at the left of the frame with width 80."
     (display-buffer buffer not-this-window)))
 
 (defun* popwin:display-buffer-1 (buffer &key if-config-not-found)
-  (loop with name = (buffer-name buffer)
+  (loop with buffer = (get-buffer buffer)
+        with name = (buffer-name buffer)
         with mode = (with-current-buffer buffer major-mode)
         with win-width = popwin:popup-window-width
         with win-height = popwin:popup-window-height
@@ -428,8 +432,7 @@ buffers will be shown at the left of the frame with width 80."
             keywords
           (let ((matched
                  (cond
-                  ((and (stringp pattern)
-                        regexp)
+                  ((and (stringp pattern) regexp)
                    (string-match pattern name))
                   ((stringp pattern)
                    (string= pattern name))
@@ -445,22 +448,37 @@ buffers will be shown at the left of the frame with width 80."
         finally return
         (if (or found
                 (null if-config-not-found))
-            (popwin:popup-buffer buffer
-                                 :width win-width
-                                 :height win-height
-                                 :position win-position
-                                 :noselect (or (minibufferp) win-noselect))
+            (progn
+              (setq popwin:last-display-buffer buffer)
+              (popwin:popup-buffer buffer
+                                   :width win-width
+                                   :height win-height
+                                   :position win-position
+                                   :noselect (or (minibufferp) win-noselect)))
           (funcall if-config-not-found buffer))))
 
 (defun popwin:display-buffer (buffer &optional not-this-window)
-  "The `display-buffer-function' with a popup window."
+  "Display BUFFER, if possible, in a popup window, or as
+usual. This function can be used as a value of
+`display-buffer-function'."
+  (interactive "BDisplay buffer:\n")
   (popwin:display-buffer-1
    buffer
-   :if-config-not-found 'popwin:original-display-buffer))
+   :if-config-not-found
+   (unless (interactive-p)
+     (lambda (buffer)
+       (popwin:original-display-buffer buffer not-this-window)))))
 
 (defun popwin:special-display-popup-window (buffer &rest ignore)
   "The `special-display-function' with a popup window."
   (popwin:display-buffer-1 buffer))
+
+(defun popwin:display-last-buffer ()
+  "Display the lastly shown buffer by `popwin:display-buffer' and
+`popwin:special-display-popup-window'."
+  (interactive)
+  (when popwin:last-display-buffer
+    (popwin:display-buffer-1 popwin:last-display-buffer)))
 
 (provide 'popwin)
 ;;; popwin.el ends here
