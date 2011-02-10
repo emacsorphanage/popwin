@@ -273,6 +273,9 @@ the popup window.")
 (defvar popwin:selected-window nil
   "Last selected window when the popup window is shown.")
 
+(defvar popwin:popup-window-stuck-p nil
+  "Non-nil means the popup window has been stuck.")
+
 (defvar popwin:window-outline nil
   "Original window outline which is obtained by
 `popwin:window-config-tree'.")
@@ -325,6 +328,7 @@ window will not be selected."
           popwin:popup-window nil
           popwin:focus-window nil
           popwin:selected-window nil
+          popwin:popup-window-stuck-p nil
           popwin:window-outline nil)))
 
 (defun popwin:should-close-popup-window-p ()
@@ -345,8 +349,12 @@ selected again."
            (minibuf-window-p (eq window (minibuffer-window)))
            (other-window-selected
             (and (not (eq window popwin:focus-window))
-                 (not (eq window popwin:popup-window)))))
+                 (not (eq window popwin:popup-window))))
+           (not-stuck-or-closed
+            (or (not popwin:popup-window-stuck-p)
+                (not (popwin:popup-window-live-p)))))
       (if (and (not minibuf-window-p)
+               not-stuck-or-closed
                (or force other-window-selected))
           (popwin:close-popup-window
            other-window-selected)))))
@@ -384,10 +392,18 @@ popup window will be replaced with BUFFER."
   popwin:popup-window)
 
 (defun popwin:select-popup-window ()
-  "Select the currently displayed popup window."
+  "Select the currently shown popup window."
   (interactive)
   (if (popwin:popup-window-live-p)
       (select-window popwin:popup-window)
+    (error "No popup window displayed")))
+
+(defun popwin:stick-popup-window ()
+  "Stick the currently shown popup window. The popup window can
+be cloesd by `popwin:close-popup-window'."
+  (interactive)
+  (if (popwin:popup-window-live-p)
+      (setq popwin:popup-window-stuck-p t)
     (error "No popup window displayed")))
 
 
