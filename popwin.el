@@ -307,8 +307,9 @@ the popup window.")
 
 (defun popwin:close-popup-window (&optional keep-selected)
   "Close the popup window and restore to the previous window
-configuration. If KEEP-SELECTED is non-nil, the lastl selected
+configuration. If KEEP-SELECTED is non-nil, the lastly selected
 window will not be selected."
+  (interactive)
   (unwind-protect
       (when popwin:popup-window
         (popwin:stop-close-popup-window-timer)
@@ -362,6 +363,7 @@ NOSELECT is non-nil, the popup window will not be
 selected. Calling `popwin:popup-buffer' during
 `popwin:popup-buffer' is allowed. In that case, the buffer of the
 popup window will be replaced with BUFFER."
+  (interactive "BPopup buffer:\n")
   (unless (popwin:popup-window-live-p)
     (let ((win-outline (car (popwin:window-config-tree))))
       (destructuring-bind (master-win popup-win)
@@ -381,6 +383,13 @@ popup window will be replaced with BUFFER."
     (switch-to-buffer buffer))
   (select-window popwin:focus-window)
   popwin:popup-window)
+
+(defun popwin:select-popup-window ()
+  "Select the currently displayed popup window."
+  (interactive)
+  (if (popwin:popup-window-live-p)
+      (select-window popwin:popup-window)
+    (error "No popup window displayed")))
 
 
 
