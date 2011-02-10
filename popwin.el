@@ -193,10 +193,13 @@ top-offset)."
                     (list 0 0))))))
 
 (defun* popwin:create-popup-window (&optional (size 15) (position 'bottom) (adjust t))
-  "Create a popup window with SIZE on the frame. If ADJUST is t,
-all of windows will be adjusted to fit the frame. POSITION must
-be one of (left top right bottom). The return value is a pair of
-a master window and the popup window. To close the popup window
+  "Create a popup window with SIZE on the frame.  If SIZE
+isinteger, the size of the popup window will be SIZE. If SIZE is
+float, the size of popup window will be a multiplier of SIZE and
+frame-size. can be an integer and a float. If ADJUST is t, all of
+windows will be adjusted to fit the frame. POSITION must be one
+of (left top right bottom). The return value is a pair of a
+master window and the popup window. To close the popup window
 properly, get `current-window-configuration' before calling this
 function, and call `set-window-configuration' with the
 window-configuration."
@@ -207,12 +210,18 @@ window-configuration."
     (delete-other-windows root-win)
     (let ((root-width (window-width root-win))
           (root-height (window-height root-win)))
-      (destructuring-bind (master-win popup-win offset)
-          (popwin:create-popup-window-1 root-win size position)
-        (when adjust
+      (when adjust
+        (if (floatp size)
+            (if (popwin:position-horizontal-p position)
+                (setq hfactor size
+                      size (round (* root-width size)))
+              (setq vfactor size
+                    size (round (* root-height size))))
           (if (popwin:position-horizontal-p position)
               (setq hfactor (/ (float (- root-width size)) root-width))
-            (setq vfactor (/ (float (- root-height size)) root-height))))
+            (setq vfactor (/ (float (- root-height size)) root-height)))))
+      (destructuring-bind (master-win popup-win offset)
+          (popwin:create-popup-window-1 root-win size position)
         (popwin:replicate-window-config master-win root offset hfactor vfactor)
         (list master-win popup-win)))))
 
@@ -228,13 +237,17 @@ bottom)."
 
 (defcustom popwin:popup-window-width 30
   "Default popup window width. If `popwin:popup-window-position'
-is top or bottom, this configuration will be ignored."
+is top or bottom, this configuration will be ignored. If this
+variable is float, the popup window width will be a multiplier of
+the value and frame-size."
   :type 'integer
   :group 'popwin)
 
 (defcustom popwin:popup-window-height 15
   "Default popup window height. If `popwin:popup-window-position'
-is left or right, this configuration will be ignored."
+is left or right, this configuration will be ignored. If this
+variable is float, the popup window height will be a multiplier
+of the value and frame-size."
   :type 'integer
   :group 'popwin)
 
