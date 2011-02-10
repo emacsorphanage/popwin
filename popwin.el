@@ -499,8 +499,9 @@ usual. This function can be used as a value of
   "Display the lastly shown buffer by `popwin:display-buffer' and
 `popwin:special-display-popup-window'."
   (interactive)
-  (when popwin:last-display-buffer
-    (popwin:display-buffer-1 popwin:last-display-buffer)))
+  (if (bufferp popwin:last-display-buffer)
+      (popwin:display-buffer-1 popwin:last-display-buffer)
+    (error "No popup window displayed")))
 
 (provide 'popwin)
 ;;; popwin.el ends here
