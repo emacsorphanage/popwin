@@ -354,8 +354,9 @@ selected again."
             (or (not popwin:popup-window-stuck-p)
                 (not (popwin:popup-window-live-p)))))
       (if (and (not minibuf-window-p)
-               not-stuck-or-closed
-               (or force other-window-selected))
+               (or force
+                   (and not-stuck-or-closed
+                        other-window-selected)))
           (popwin:close-popup-window
            other-window-selected)))))
 
@@ -364,12 +365,14 @@ selected again."
                              (width popwin:popup-window-width)
                              (height popwin:popup-window-height)
                              (position popwin:popup-window-position)
-                             noselect)
+                             noselect
+                             stick)
   "Show BUFFER in a popup window and return the popup window. If
-NOSELECT is non-nil, the popup window will not be
-selected. Calling `popwin:popup-buffer' during
-`popwin:popup-buffer' is allowed. In that case, the buffer of the
-popup window will be replaced with BUFFER."
+NOSELECT is non-nil, the popup window will not be selected. If
+STICK is non-nil, the popup window will be stuck. Calling
+`popwin:popup-buffer' during `popwin:popup-buffer' is allowed. In
+that case, the buffer of the popup window will be replaced with
+BUFFER."
   (interactive "BPopup buffer:\n")
   (unless (popwin:popup-window-live-p)
     (let ((win-outline (car (popwin:window-config-tree))))
@@ -385,7 +388,8 @@ popup window will be replaced with BUFFER."
         popwin:selected-window (selected-window)
         popwin:focus-window (if noselect
                                 popwin:selected-window
-                              popwin:popup-window))
+                              popwin:popup-window)
+        popwin:popup-window-stuck-p stick)
   (with-selected-window popwin:popup-window
     (switch-to-buffer buffer))
   (select-window popwin:focus-window)
@@ -439,6 +443,9 @@ major-mode of buffer. Available keyword are following:
   noselect: If the value is non-nil, the popup window will not be
     selected when it is shown.
 
+  stick: If the value is non-nil, the popup window will be stuck
+    when it is shown.
+
 Examples: With '(\"*scratch*\" :height 30 :position top),
 *scratch* buffer will be shown at the top of the frame with
 height 30. With '(dired-mode :width 80 :position left), dired
@@ -462,10 +469,11 @@ buffers will be shown at the left of the frame with width 80."
         with win-height = popwin:popup-window-height
         with win-position = popwin:popup-window-position
         with win-noselect
+        with win-stick
         with found
         until found
         for (pattern . keywords) in popwin:special-display-config do
-        (destructuring-bind (&key regexp width height position noselect)
+        (destructuring-bind (&key regexp width height position noselect stick)
             keywords
           (let ((matched
                  (cond
@@ -481,7 +489,8 @@ buffers will be shown at the left of the frame with width 80."
                       win-width (or width win-width)
                       win-height (or height win-height)
                       win-position (or position win-position)
-                      win-noselect noselect))))
+                      win-noselect noselect
+                      win-stick stick))))
         finally return
         (if (or found
                 (null if-config-not-found))
@@ -491,7 +500,8 @@ buffers will be shown at the left of the frame with width 80."
                                    :width win-width
                                    :height win-height
                                    :position win-position
-                                   :noselect (or (minibufferp) win-noselect)))
+                                   :noselect (or (minibufferp) win-noselect)
+                                   :stick win-stick))
           (funcall if-config-not-found buffer))))
 
 (defun popwin:display-buffer (buffer &optional not-this-window)
