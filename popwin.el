@@ -336,7 +336,8 @@ window will not be selected."
 immediately. It might be useful if this is customizable
 function."
   (and popwin:popup-window
-       (or (eq last-command-event ?\C-g)
+       (or (and (eq last-command 'keyboard-quit)
+                (eq last-command-event ?\C-g))
            (popwin:buried-buffer-p popwin:popup-buffer))))
 
 (defun popwin:close-popup-window-if-necessary (&optional force)
