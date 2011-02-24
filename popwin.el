@@ -109,7 +109,7 @@ factor HFACTOR, and vertical factor VFACTOR."
             (eq (selected-window) node))
     (destructuring-bind (dir edges . windows) node
       (append (list dir edges)
-              (mapcar #'popwin:window-config-tree-1 windows)))))
+              (mapcar 'popwin:window-config-tree-1 windows)))))
 
 (defun popwin:window-config-tree ()
   "Return `window-tree' with replacing window values in the tree
@@ -295,7 +295,7 @@ the popup window.")
       (setq popwin:close-popup-window-timer
             (run-with-timer popwin:close-popup-window-timer-interval
                             popwin:close-popup-window-timer-interval
-                            #'popwin:close-popup-window-timer))))
+                            'popwin:close-popup-window-timer))))
 
 (defun popwin:stop-close-popup-window-timer ()
   (when popwin:close-popup-window-timer
@@ -528,6 +528,41 @@ usual. This function can be used as a value of
   (if (bufferp popwin:last-display-buffer)
       (popwin:display-buffer-1 popwin:last-display-buffer)
     (error "No popup window displayed")))
+
+
+
+;;; Extensions
+
+(defun popwin:popup-buffer-tail (&rest same-as-popwin:popup-buffer)
+  "Same as `popwin:popup-buffer' except that the buffer will be
+`recenter'ed at the bottom."
+  (interactive "bPopup buffer:\n")
+  (let ((popup-win (apply 'popwin:popup-buffer same-as-popwin:popup-buffer)))
+    (set-window-point popup-win (point-max))
+    (recenter -2)
+    popup-win))
+
+(defun popwin:find-file (filename &optional wildcards)
+  "Edit file FILENAME with popup window by `popwin:popup-buffer'."
+  (interactive
+   (find-file-read-args "Find file in popup window: "
+                        (if (fboundp 'confirm-nonexistent-file-or-buffer)
+                            (confirm-nonexistent-file-or-buffer))))
+  (popwin:popup-buffer (find-file-noselect filename wildcards)))
+
+(defun popwin:find-file-tail (file &optional wildcard)
+  "Edit file FILENAME with popup window by
+`popwin:popup-buffer-tail'."
+  (interactive
+   (find-file-read-args "Find file in popup window: "
+                        (if (fboundp 'confirm-nonexistent-file-or-buffer)
+                            (confirm-nonexistent-file-or-buffer))))
+  (popwin:popup-buffer-tail (find-file-noselect file wildcard)))
+
+(defun popwin:messages ()
+  "Display *Messages* buffer in a popup window."
+  (interactive)
+  (popwin:popup-buffer-tail "*Messages*"))
 
 (provide 'popwin)
 ;;; popwin.el ends here
