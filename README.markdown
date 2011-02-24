@@ -92,8 +92,8 @@ Special Display Config
 When you want to show buffers in a popup window as you like, you need
 to write a configuration about `popwin:special-display-config`.
 
-This varaiable is a list of a form like `(pattern :regexp REGEXP
-:width WIDTH :height HEIGHT :position POS :noselect NOSEL :stick
+This variable is a list of a form like `(pattern :regexp REGEXP :width
+WIDTH :height HEIGHT :position POS :noselect NOSEL :stick
 STICK)`. Only `pattern` is necessary and other keywords are
 optional. `PATTERN` is string or symbol. If string, it indicates which
 buffers should be shown in a popup window. If symbol, it indicates
