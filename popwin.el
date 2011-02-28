@@ -405,7 +405,7 @@ BUFFER."
 
 (defun popwin:stick-popup-window ()
   "Stick the currently shown popup window. The popup window can
-be cloesd by `popwin:close-popup-window'."
+be closed by `popwin:close-popup-window'."
   (interactive)
   (if (popwin:popup-window-live-p)
       (setq popwin:popup-window-stuck-p t)
