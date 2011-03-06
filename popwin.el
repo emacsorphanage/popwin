@@ -459,7 +459,10 @@ buffers will be shown at the left of the frame with width 80."
 (defun popwin:original-display-buffer (buffer &optional not-this-window)
   "Call `display-buffer' for BUFFER without special displaying."
   (let (display-buffer-function special-display-function)
-    (popwin:close-popup-window)
+    ;; Close the popup window here so that the popup window won't to
+    ;; be splitted.
+    (if (eq (selected-window) popwin:popup-window)
+        (popwin:close-popup-window))
     (display-buffer buffer not-this-window)))
 
 (defun* popwin:display-buffer-1 (buffer &key if-config-not-found)
