@@ -465,7 +465,13 @@ buffers will be shown at the left of the frame with width 80."
         (popwin:close-popup-window))
     (display-buffer buffer not-this-window)))
 
-(defun* popwin:display-buffer-1 (buffer &key if-config-not-found)
+(defun* popwin:display-buffer-1 (buffer &key default-config-keywords if-config-not-found)
+  "Display BUFFER, if possible, in a popup window. Otherwise call
+IF-CONFIG-NOT-FOUND with BUFFER if it is non-nil. If
+IF-CONFIG-NOT-FOUND is nil, `display-buffer' will be called with
+`special-display-function' nil. DEFAULT-CONFIG-KEYWORDS is a
+property list which specifies default values of the selected
+config."
   (loop with buffer = (get-buffer buffer)
         with name = (buffer-name buffer)
         with mode = (with-current-buffer buffer major-mode)
@@ -478,7 +484,7 @@ buffers will be shown at the left of the frame with width 80."
         until found
         for (pattern . keywords) in popwin:special-display-config do
         (destructuring-bind (&key regexp width height position noselect stick)
-            keywords
+            (append keywords default-config-keywords)
           (let ((matched
                  (cond
                   ((and (stringp pattern) regexp)
