@@ -22,9 +22,6 @@
 (defvar buf2 (get-buffer-create "*buf2*"))
 (defvar buf3 (get-buffer-create "*buf3*"))
 
-(with-current-buffer buf1
-  (insert "foo1\nfoo2\nbar\nfoo3\n"))
-
 (test "*buf2* selected?"
   (switch-to-buffer buf1)
   (split-window-horizontally)
