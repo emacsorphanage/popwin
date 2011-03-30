@@ -338,6 +338,7 @@ function."
   (and popwin:popup-window
        (or (and (eq last-command 'keyboard-quit)
                 (eq last-command-event ?\C-g))
+           (not (buffer-live-p popwin:popup-buffer))
            (popwin:buried-buffer-p popwin:popup-buffer))))
 
 (defun popwin:close-popup-window-if-necessary (&optional force)
@@ -351,6 +352,9 @@ selected again."
            (other-window-selected
             (and (not (eq window popwin:focus-window))
                  (not (eq window popwin:popup-window))))
+           (working-buffer-p
+            (and (buffer-live-p popwin:popup-buffer)
+                 (not (popwin:buried-buffer-p popwin:popup-buffer))))
            (not-stuck-or-closed
             (or (not popwin:popup-window-stuck-p)
                 (not (popwin:popup-window-live-p)))))
@@ -359,7 +363,8 @@ selected again."
                    (and not-stuck-or-closed
                         other-window-selected)))
           (popwin:close-popup-window
-           other-window-selected)))))
+           (and other-window-selected
+                working-buffer-p))))))
 
 (defun* popwin:popup-buffer (buffer
                              &key
@@ -375,6 +380,7 @@ STICK is non-nil, the popup window will be stuck. Calling
 that case, the buffer of the popup window will be replaced with
 BUFFER."
   (interactive "BPopup buffer:\n")
+  (setq buffer (get-buffer buffer))
   (unless (popwin:popup-window-live-p)
     (let ((win-outline (car (popwin:window-config-tree))))
       (destructuring-bind (master-win popup-win)
