@@ -352,7 +352,7 @@ selected again."
            (other-window-selected
             (and (not (eq window popwin:focus-window))
                  (not (eq window popwin:popup-window))))
-           (working-buffer-p
+           (popup-buffer-still-working
             (and (buffer-live-p popwin:popup-buffer)
                  (not (popwin:buried-buffer-p popwin:popup-buffer))))
            (not-stuck-or-closed
@@ -364,7 +364,7 @@ selected again."
                         other-window-selected)))
           (popwin:close-popup-window
            (and other-window-selected
-                working-buffer-p))))))
+                popup-buffer-still-working))))))
 
 (defun* popwin:popup-buffer (buffer
                              &key
