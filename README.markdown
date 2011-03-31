@@ -100,7 +100,8 @@ buffers should be shown in a popup window. If symbol, it indicates
 which buffers of the major mode of the symbol should be shown in a
 popup window.
 
-Take an example. If you want to show `*scratch*` buffer, write the following code:
+Take an example. If you want to show `*scratch*` buffer, write the
+following code:
 
     (setq popwin:special-display-config '(("*scratch*")))
 
@@ -142,6 +143,29 @@ Show dired buffers in a popup window by `M-x dired-jump-other-window`.
     (push '(dired-mode :position top) popwin:special-display-config)
 
 ![](http://cx4a.org/software/popwin/popwin-dired.png)
+
+Working with Other Extensions
+-----------------------------
+
+Some extensions can't work with popwin or needs workarounds. Here is
+the known issues and solutions.
+
+#### YaTeX
+
+Some people wants to show `*YaTeX-typesetting*` buffer with popwin,
+but it is fundamentally impossible because YaTeX doesn't use
+`display-buffer`. The solution is the following:
+
+    (require 'popwin-yatex)
+
+You may write the configuration like:
+
+    (push '("*YaTeX-typesetting*") popwin:special-display-config)
+
+#### `windows.el`
+
+There is an problem when loading `windows.el` after loading
+`popwin.el`. So load `windows.el` first.
 
 API
 ---
