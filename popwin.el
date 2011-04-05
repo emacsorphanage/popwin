@@ -583,5 +583,31 @@ usual. This function can be used as a value of
   (interactive)
   (popwin:popup-buffer-tail "*Messages*"))
 
+
+
+;;; Keymaps
+
+(defvar popwin:keymap
+  (let ((map (make-keymap)))
+    (define-key map "b" 'popwin:popup-buffer)
+    (define-key map "\C-b" 'popwin:popup-buffer)
+    (define-key map "\M-b" 'popwin:popup-buffer-tail)
+    (define-key map "o" 'popwin:display-buffer)
+    (define-key map "\C-o" 'popwin:display-buffer)
+    (define-key map "p" 'popwin:display-last-buffer)
+    (define-key map "\C-p" 'popwin:display-last-buffer)
+    (define-key map "f" 'popwin:find-file)
+    (define-key map "\C-f" 'popwin:find-file)
+    (define-key map "\M-f" 'popwin:find-file-tail)
+    (define-key map "s" 'popwin:select-popup-window)
+    (define-key map "\C-s" 'popwin:select-popup-window)
+    (define-key map "\M-s" 'popwin:stick-popup-window)
+    (define-key map "0" 'popwin:close-popup-window)
+    (define-key map "m" 'popwin:messages)
+    (define-key map "\C-m" 'popwin:messages)
+    map)
+  "Default keymap for popwin commands. Use like:
+\(global-set-key (kbd \"C-x C-p\") 'popwin:keymap\)")
+
 (provide 'popwin)
 ;;; popwin.el ends here
