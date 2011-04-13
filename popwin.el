@@ -276,6 +276,9 @@ the popup window.")
 (defvar popwin:popup-window-stuck-p nil
   "Non-nil means the popup window has been stuck.")
 
+(defvar popwin:popup-window-keyb-p nil
+  "Non-nil means clear pending keyboard commands at window close.")
+
 (defvar popwin:window-outline nil
   "Original window outline which is obtained by
 `popwin:window-config-tree'.")
@@ -316,6 +319,8 @@ window will not be selected."
   (unwind-protect
       (when popwin:popup-window
         (popwin:stop-close-popup-window-timer)
+	(if popwin:popup-window-keyb-p
+	    (call-interactively 'popwin:keyboard-escape))
         (if (and (popwin:popup-window-live-p)
                  (window-live-p popwin:master-window))
             (delete-window popwin:popup-window))
@@ -329,6 +334,7 @@ window will not be selected."
           popwin:focus-window nil
           popwin:selected-window nil
           popwin:popup-window-stuck-p nil
+          popwin:popup-window-keyb-p nil
           popwin:window-outline nil)))
 
 (defun popwin:should-close-popup-window-p ()
@@ -372,13 +378,15 @@ selected again."
                              (height popwin:popup-window-height)
                              (position popwin:popup-window-position)
                              noselect
-                             stick)
+                             stick
+                             keyb)
   "Show BUFFER in a popup window and return the popup window. If
 NOSELECT is non-nil, the popup window will not be selected. If
-STICK is non-nil, the popup window will be stuck. Calling
-`popwin:popup-buffer' during `popwin:popup-buffer' is allowed. In
-that case, the buffer of the popup window will be replaced with
-BUFFER."
+STICK is non-nil, the popup window will be stuck. If KEYB is non-nil,
+popwin:keyboard-escape will be called on window close, clearing
+pending actions in the minibuffer. Calling `popwin:popup-buffer'
+during `popwin:popup-buffer' is allowed. In that case, the buffer
+of the popup window will be replaced with BUFFER."
   (interactive "BPopup buffer:\n")
   (setq buffer (get-buffer buffer))
   (unless (popwin:popup-window-live-p)
@@ -396,7 +404,8 @@ BUFFER."
         popwin:focus-window (if noselect
                                 popwin:selected-window
                               popwin:popup-window)
-        popwin:popup-window-stuck-p stick)
+        popwin:popup-window-stuck-p stick
+        popwin:popup-window-keyb-p keyb)
   (with-selected-window popwin:popup-window
     (switch-to-buffer buffer))
   (select-window popwin:focus-window)
@@ -416,6 +425,21 @@ be closed by `popwin:close-popup-window'."
   (if (popwin:popup-window-live-p)
       (setq popwin:popup-window-stuck-p t)
     (error "No popup window displayed")))
+
+(defun popwin:keyboard-escape ()
+  "A limited version of keyboard-escape from simple.el.
+Exit the current \"mode\" (in a generalized sense of the word).
+This command can exit an interactive command such as `query-replace',
+can clear out a prefix argument or a region,
+can get out of the minibuffer or other recursive edit"
+  (interactive)
+  (cond ((eq last-command 'mode-exited) nil)
+	((> (minibuffer-depth) 0)
+	 (abort-recursive-edit))
+	(current-prefix-arg
+	 nil)
+	((> (recursion-depth) 0)
+	 (exit-recursive-edit))))
 
 
 
@@ -452,6 +476,10 @@ major-mode of buffer. Available keyword are following:
 
   stick: If the value is non-nil, the popup window will be stuck
     when it is shown.
+
+  keyb: If the value is non-nil, popwin:keyboard-escape will be
+    called at the close of the popup window, clearing pending
+    keyboard actions.
 
 Examples: With '(\"*scratch*\" :height 30 :position top),
 *scratch* buffer will be shown at the top of the frame with
@@ -490,10 +518,11 @@ specifies default values of the selected config."
         with win-position = popwin:popup-window-position
         with win-noselect
         with win-stick
+        with win-keyb
         with found
         until found
         for (pattern . keywords) in popwin:special-display-config do
-        (destructuring-bind (&key regexp width height position noselect stick)
+        (destructuring-bind (&key regexp width height position noselect stick keyb)
             (append keywords default-config-keywords)
           (let ((matched
                  (cond
@@ -510,7 +539,8 @@ specifies default values of the selected config."
                       win-height (or height win-height)
                       win-position (or position win-position)
                       win-noselect noselect
-                      win-stick stick))))
+                      win-stick stick
+                      win-keyb keyb))))
         finally return
         (if (or found
                 (null if-config-not-found))
@@ -521,7 +551,8 @@ specifies default values of the selected config."
                                    :height win-height
                                    :position win-position
                                    :noselect (or (minibufferp) win-noselect)
-                                   :stick win-stick))
+                                   :stick win-stick
+                                   :keyb win-keyb))
           (funcall if-config-not-found buffer))))
 
 (defun popwin:display-buffer (buffer-or-name &optional not-this-window)
