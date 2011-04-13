@@ -23,12 +23,12 @@
 
 ;; Popwin makes you free from the hell of annoying buffers such like
 ;; *Help*, *Completions*, *compilation*, and etc.
-;; 
+;;
 ;; To use popwin, just add the following code into your .emacs:
-;; 
+;;
 ;;     (require 'popwin)
 ;;     (setq display-buffer-function 'popwin:display-buffer)
-;; 
+;;
 ;; Then try to show some buffer, for example *Help* or
 ;; *Completeions*. Unlike standard behavior, their buffers may be
 ;; shown in a popup window at the bottom of the frame. And you can
@@ -51,7 +51,7 @@
 ;; In this case, you need to change `special-display-buffer-names' or
 ;; `special-display-regexps' so that popwin takes care of such
 ;; buffers.
-;; 
+;;
 ;; The default width/height/position of popup window can be changed by
 ;; setting `popwin:popup-window-width', `popwin:popup-window-height',
 ;; and `popwin:popup-window-position'.  You can also change the
