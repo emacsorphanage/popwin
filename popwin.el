@@ -4,7 +4,7 @@
 
 ;; Author: Tomohiro Matsuyama <tomo@cx4a.org>
 ;; Keywords: convenience
-;; Version: 0.2
+;; Version: 0.3
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -82,24 +82,42 @@ minibuffer window is selected."
   "Return t if BUFFER might be thought of as a buried buffer."
   (eq (car (last (buffer-list))) buffer))
 
-(defun* popwin:adjust-window-edges (window edges
-                                           &optional
-                                           (offset '(0 0))
-                                           (hfactor 1)
-                                           (vfactor 1))
+(defvar popwin:empty-buffer nil
+  "Marker buffer of indicating a window of the buffer is being a
+popup window.")
+
+(defun popwin:empty-buffer ()
+  (if (buffer-live-p popwin:empty-buffer)
+      popwin:empty-buffer
+    (setq popwin:empty-buffer
+          (get-buffer-create " *popwin-empty*"))))
+
+(defun popwin:window-trailing-edge-adjustable-p (window)
+  "Return t if a trailing edge of WINDOW is adjustable."
+  (let ((next-window (next-window window)))
+    (and (not (eq next-window (frame-first-window)))
+         (not (eq (window-buffer next-window)
+                  (popwin:empty-buffer))))))
+
+(defun* popwin:adjust-window-edges (window
+                                    edges
+                                    &optional
+                                    (offset '(0 0))
+                                    (hfactor 1)
+                                    (vfactor 1))
   "Adjust edges of WINDOW to EDGES accoring to OFFSET, horizontal
 factor HFACTOR, and vertical factor VFACTOR."
-  (destructuring-bind ((left top right bottom)
-                       (cur-left cur-top cur-right cur-bottom)
-                       (left-offset top-offset))
-      (list edges (window-edges window) offset)
-    (let ((hdelta (floor (- cur-left (* left hfactor) left-offset)))
-          (vdelta (floor (- cur-top (* top vfactor) top-offset))))
-      (with-selected-window window
-        (if (/= hdelta 0)
-            (enlarge-window hdelta t))
-        (if (/= vdelta 0)
-            (enlarge-window vdelta))))))
+  (when (popwin:window-trailing-edge-adjustable-p window)
+    (destructuring-bind ((left top right bottom)
+                         (cur-left cur-top cur-right cur-bottom)
+                         (left-offset top-offset))
+        (list edges (window-edges window) offset)
+      (let ((hdelta (floor (- (* (- right left) hfactor) (- cur-right cur-left))))
+            (vdelta (floor (- (* (- bottom top) vfactor) (- cur-bottom cur-top)))))
+        (ignore-errors
+          (adjust-window-trailing-edge window hdelta t))
+        (ignore-errors
+          (adjust-window-trailing-edge window vdelta nil))))))
 
 (defun popwin:window-config-tree-1 (node)
   (if (windowp node)
@@ -179,18 +197,22 @@ top-offset)."
   (let ((width (window-width window))
         (height (window-height window)))
     (ecase position
-      (left   (list (split-window window size t)
-                    window
-                    (list size 0)))
-      (top    (list (split-window window size nil)
-                    window
-                    (list 0 size)))
-      (right  (list window
-                    (split-window window (- width size) t)
-                    (list 0 0)))
-      (bottom (list window
-                    (split-window window (- height size) nil)
-                    (list 0 0))))))
+      ((left :left)
+       (list (split-window window size t)
+             window
+             (list size 0)))
+      ((top :top)
+       (list (split-window window size nil)
+             window
+             (list 0 size)))
+      ((right :right)
+       (list window
+             (split-window window (- width size) t)
+             (list 0 0)))
+      ((bottom :bottom)
+       (list window
+             (split-window window (- height size) nil)
+             (list 0 0))))))
 
 (defun* popwin:create-popup-window (&optional (size 15) (position 'bottom) (adjust t))
   "Create a popup window with SIZE on the frame.  If SIZE
@@ -213,15 +235,18 @@ window-configuration."
       (when adjust
         (if (floatp size)
             (if (popwin:position-horizontal-p position)
-                (setq hfactor size
+                (setq hfactor (- 1.0 size)
                       size (round (* root-width size)))
-              (setq vfactor size
+              (setq vfactor (- 1.0 size)
                     size (round (* root-height size))))
           (if (popwin:position-horizontal-p position)
-              (setq hfactor (/ (float (- root-width size)) root-width))
-            (setq vfactor (/ (float (- root-height size)) root-height)))))
+              (setq hfactor (- 1.0 (/ (float (- root-width size)) root-width)))
+            (setq vfactor (- 1.0 (/ (float (- root-height size)) root-height))))))
       (destructuring-bind (master-win popup-win offset)
           (popwin:create-popup-window-1 root-win size position)
+        ;; Mark popup-win being a popup window.
+        (with-selected-window popup-win
+          (switch-to-buffer (popwin:empty-buffer)))
         (popwin:replicate-window-config master-win root offset hfactor vfactor)
         (list master-win popup-win)))))
 
@@ -316,9 +341,9 @@ window will not be selected."
   (unwind-protect
       (when popwin:popup-window
         (popwin:stop-close-popup-window-timer)
-        (if (and (popwin:popup-window-live-p)
-                 (window-live-p popwin:master-window))
-            (delete-window popwin:popup-window))
+        (when (and (popwin:popup-window-live-p)
+                   (window-live-p popwin:master-window))
+          (delete-window popwin:popup-window))
         (popwin:restore-window-outline (car (window-tree))
                                        popwin:window-outline)
         (if (and (not keep-selected)

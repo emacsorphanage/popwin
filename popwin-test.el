@@ -81,6 +81,30 @@
   (switch-to-buffer buf1)
   (popwin:popup-buffer buf2 :width 0.5 :position 'left))
 
+(ui-test "popup with three columns (bottom)?"
+  (switch-to-buffer buf1)
+  (split-window-vertically)
+  (split-window-vertically)
+  (popwin:popup-buffer buf2 :position 'bottom))
+
+(ui-test "popup with three columns (left)?"
+  (switch-to-buffer buf1)
+  (split-window-horizontally)
+  (split-window-horizontally)
+  (popwin:popup-buffer buf2 :position 'left))
+
+(ui-test "popup with three columns (top)?"
+  (switch-to-buffer buf1)
+  (split-window-vertically)
+  (split-window-vertically)
+  (popwin:popup-buffer buf2 :position 'top))
+
+(ui-test "popup with three columns (right)?"
+  (switch-to-buffer buf1)
+  (split-window-horizontally)
+  (split-window-horizontally)
+  (popwin:popup-buffer buf2 :position 'right))
+
 (ui-test "popup *buf1*?"
   (switch-to-buffer buf1)
   (let ((popwin:special-display-config '(("*buf1*"))))
