@@ -607,7 +607,7 @@ usual. This function can be used as a value of
     (define-key map "\C-m" 'popwin:messages)
     map)
   "Default keymap for popwin commands. Use like:
-\(global-set-key (kbd \"C-x C-p\") 'popwin:keymap\)")
+\(global-set-key (kbd \"C-x C-p\") popwin:keymap\)")
 
 (provide 'popwin)
 ;;; popwin.el ends here
