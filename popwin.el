@@ -102,16 +102,14 @@ popup window.")
 (defun* popwin:adjust-window-edges (window
                                     edges
                                     &optional
-                                    (offset '(0 0))
                                     (hfactor 1)
                                     (vfactor 1))
-  "Adjust edges of WINDOW to EDGES accoring to OFFSET, horizontal
-factor HFACTOR, and vertical factor VFACTOR."
+  "Adjust edges of WINDOW to EDGES accoring to horizontal factor
+HFACTOR, and vertical factor VFACTOR."
   (when (popwin:window-trailing-edge-adjustable-p window)
     (destructuring-bind ((left top right bottom)
-                         (cur-left cur-top cur-right cur-bottom)
-                         (left-offset top-offset))
-        (list edges (window-edges window) offset)
+                         (cur-left cur-top cur-right cur-bottom))
+        (list edges (window-edges window))
       (let ((hdelta (floor (- (* (- right left) hfactor) (- cur-right cur-left))))
             (vdelta (floor (- (* (- bottom top) vfactor) (- cur-bottom cur-top)))))
         (ignore-errors
@@ -136,13 +134,13 @@ with persistent representations."
       (window-tree)
     (list (popwin:window-config-tree-1 root) mini)))
 
-(defun popwin:replicate-window-config (window node offset hfactor vfactor)
-  "Replicate NODE of window configuration on WINDOW with OFFSET,
+(defun popwin:replicate-window-config (window node hfactor vfactor)
+  "Replicate NODE of window configuration on WINDOW with
 horizontal factor HFACTOR, and vertical factor VFACTOR."
   (if (eq (car node) 'window)
       (destructuring-bind (buffer edges selected)
           (cdr node)
-        (popwin:adjust-window-edges window edges offset hfactor vfactor)
+        (popwin:adjust-window-edges window edges hfactor vfactor)
         (with-selected-window window
           (switch-to-buffer buffer))
         (if selected
@@ -153,8 +151,8 @@ horizontal factor HFACTOR, and vertical factor VFACTOR."
             for w2 = (pop windows)
             do
             (let ((new-window (split-window window nil (not dir))))
-              (popwin:replicate-window-config window w1 offset hfactor vfactor)
-              (popwin:replicate-window-config new-window w2 offset hfactor vfactor)
+              (popwin:replicate-window-config window w1 hfactor vfactor)
+              (popwin:replicate-window-config new-window w2 hfactor vfactor)
               (setq window new-window))))))
 
 (defun popwin:restore-window-outline (node outline)
@@ -191,28 +189,22 @@ which is a node of `window-tree' and OUTLINE which is a node of
 
 (defun popwin:create-popup-window-1 (window size position)
   "Create a new window with SIZE at POSITION of WINDOW. The
-return value is a list of a master window, the popup window,
-offsets of the master window in a form of (left-offset
-top-offset)."
+return value is a list of a master window and the popup window."
   (let ((width (window-width window))
         (height (window-height window)))
     (ecase position
       ((left :left)
        (list (split-window window size t)
-             window
-             (list size 0)))
+             window))
       ((top :top)
        (list (split-window window size nil)
-             window
-             (list 0 size)))
+             window))
       ((right :right)
        (list window
-             (split-window window (- width size) t)
-             (list 0 0)))
+             (split-window window (- width size) t)))
       ((bottom :bottom)
        (list window
-             (split-window window (- height size) nil)
-             (list 0 0))))))
+             (split-window window (- height size) nil))))))
 
 (defun* popwin:create-popup-window (&optional (size 15) (position 'bottom) (adjust t))
   "Create a popup window with SIZE on the frame.  If SIZE
@@ -242,12 +234,12 @@ window-configuration."
           (if (popwin:position-horizontal-p position)
               (setq hfactor (- 1.0 (/ (float (- root-width size)) root-width)))
             (setq vfactor (- 1.0 (/ (float (- root-height size)) root-height))))))
-      (destructuring-bind (master-win popup-win offset)
+      (destructuring-bind (master-win popup-win)
           (popwin:create-popup-window-1 root-win size position)
         ;; Mark popup-win being a popup window.
         (with-selected-window popup-win
           (switch-to-buffer (popwin:empty-buffer)))
-        (popwin:replicate-window-config master-win root offset hfactor vfactor)
+        (popwin:replicate-window-config master-win root hfactor vfactor)
         (list master-win popup-win)))))
 
 
