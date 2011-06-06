@@ -484,8 +484,9 @@ buffers will be shown at the left of the frame with width 80."
   (let (display-buffer-function special-display-function)
     ;; Close the popup window here so that the popup window won't to
     ;; be splitted.
-    (if (eq (selected-window) popwin:popup-window)
-        (popwin:close-popup-window))
+    (when (and (eq (selected-window) popwin:popup-window)
+               (not (same-window-p (buffer-name buffer))))
+      (popwin:close-popup-window))
     (display-buffer buffer not-this-window)))
 
 (defun* popwin:display-buffer-1 (buffer-or-name &key default-config-keywords if-buffer-not-found if-config-not-found)
