@@ -232,8 +232,8 @@ window-configuration."
               (setq vfactor (- 1.0 size)
                     size (round (* root-height size))))
           (if (popwin:position-horizontal-p position)
-              (setq hfactor (- 1.0 (/ (float (- root-width size)) root-width)))
-            (setq vfactor (- 1.0 (/ (float (- root-height size)) root-height))))))
+              (setq hfactor (/ (float (- root-width size)) root-width))
+            (setq vfactor (/ (float (- root-height size)) root-height)))))
       (destructuring-bind (master-win popup-win)
           (popwin:create-popup-window-1 root-win size position)
         ;; Mark popup-win being a popup window.
