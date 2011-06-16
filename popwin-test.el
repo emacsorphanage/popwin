@@ -159,5 +159,7 @@
 
 ;; test-case M-x occur and M-x next-error
 ;; test-case M-x dired and o
+;; test-case fixed size popwin
+;; test-case partial-completion-mode nil
 
 (message "Congratulations!")

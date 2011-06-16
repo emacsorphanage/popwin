@@ -375,10 +375,10 @@ selected again."
            (not-stuck-or-closed
             (or (not popwin:popup-window-stuck-p)
                 (not (popwin:popup-window-live-p)))))
-      (if (and (not minibuf-window-p)
-               (or force
-                   (and not-stuck-or-closed
-                        other-window-selected)))
+      (if (or force
+              (and (not minibuf-window-p)
+                   not-stuck-or-closed
+                   other-window-selected))
           (popwin:close-popup-window
            (and other-window-selected
                 popup-buffer-still-working))))))
