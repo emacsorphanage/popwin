@@ -161,5 +161,6 @@
 ;; test-case M-x dired and o
 ;; test-case fixed size popwin
 ;; test-case partial-completion-mode nil
+;; test-case slime-macroexpand-1 loses window focus
 
 (message "Congratulations!")
