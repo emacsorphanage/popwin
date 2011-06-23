@@ -409,14 +409,14 @@ BUFFER."
               popwin:window-outline win-outline
               popwin:selected-window (selected-window))
         (popwin:start-close-popup-window-timer))))
+  (with-selected-window popwin:popup-window
+    (switch-to-buffer buffer))
   (setq popwin:popup-buffer buffer
         popwin:popup-window-stuck-p stick)
   (if noselect
       (setq popwin:focus-window popwin:selected-window)
     (setq popwin:focus-window popwin:popup-window)
     (select-window popwin:popup-window))
-  (with-selected-window popwin:popup-window
-    (switch-to-buffer buffer))
   popwin:popup-window)
 
 (defun popwin:select-popup-window ()
