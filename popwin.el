@@ -623,7 +623,22 @@ usual. This function can be used as a value of
     (define-key map "\C-m" 'popwin:messages)
     map)
   "Default keymap for popwin commands. Use like:
-\(global-set-key (kbd \"C-x C-p\") popwin:keymap\)")
+\(global-set-key (kbd \"C-x C-p\") popwin:keymap\)
+
+Keymap:
+
+| Key    | Command                    |
+|--------+----------------------------|
+| b, C-b | popwin:popup-buffer        |
+| M-b    | popwin:popup-buffer-tail   |
+| o, C-o | popwin:display-buffer      |
+| p, C-p | popwin:display-last-buffer |
+| f, C-f | popwin:find-file           |
+| M-f    | popwin:find-file-tail      |
+| s, C-s | popwin:select-popup-window |
+| M-s    | popwin:stick-popup-window  |
+| 0      | popwin:close-popup-window  |
+| m, C-m | popwin:messages            |")
 
 (provide 'popwin)
 ;;; popwin.el ends here

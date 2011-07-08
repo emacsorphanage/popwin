@@ -86,6 +86,28 @@ Customization
 Please do `M-x customize-group RET popwin RET`. See the header of
 `popwin.el`, source code, and docstrings for more information.
 
+### Default Keymap
+
+popwin provides a default keymap named `popwin:keymap`. You can use it
+like:
+
+    (global-set-key (kbd "C-x p") popwin:keymap)
+
+Keymap:
+
+    | Key    | Command                    |
+    |--------+----------------------------|
+    | b, C-b | popwin:popup-buffer        |
+    | M-b    | popwin:popup-buffer-tail   |
+    | o, C-o | popwin:display-buffer      |
+    | p, C-p | popwin:display-last-buffer |
+    | f, C-f | popwin:find-file           |
+    | M-f    | popwin:find-file-tail      |
+    | s, C-s | popwin:select-popup-window |
+    | M-s    | popwin:stick-popup-window  |
+    | 0      | popwin:close-popup-window  |
+    | m, C-m | popwin:messages            |
+
 Special Display Config
 ----------------------
 
@@ -152,15 +174,41 @@ the known issues and solutions.
 
 #### YaTeX
 
-Some people wants to show `*YaTeX-typesetting*` buffer with popwin,
-but it is fundamentally impossible because YaTeX doesn't use
-`display-buffer`. The solution is the following:
+`misc/popwin-yatex.el` helps you to show YaTeX related buffers in
+popup windows. Add the following code into `.emacs`.
 
     (require 'popwin-yatex)
 
 You may write the configuration like:
 
     (push '("*YaTeX-typesetting*") popwin:special-display-config)
+
+#### w3m
+
+`misc/popwin-w3m.el` helps you to show specific pages with w3m in
+popup windows. Add the following code into `.emacs`.
+
+    (require 'popwin-w3m)
+
+It is recommended to change `browse-url-browser-function` to
+`popwin:w3m-browse-url`.
+
+    (setq browse-url-browser-function 'popwin:w3m-browse-url)
+
+`popwin:w3m-browse-url` is a function (and command) displaying w3m
+buffers in popup windows if the given URL is matched with the rules.
+
+The rules are described by `popwin:w3m-special-display-config`
+variable, which has a almost same structure of
+`popwin:special-display-config`.
+
+The difference is `popwin:w3m-special-display-config` takes an URL
+regular expression instead of buffer name pattern.
+
+For example, if you want to show google search pages in popup windows,
+the configuration could be:
+
+    (push '("^http://www\\.google\\.com/.*$") popwin:w3m-special-display-config)
 
 #### `windows.el`
 
