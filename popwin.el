@@ -134,6 +134,11 @@ with persistent representations."
       (window-tree)
     (list (popwin:window-config-tree-1 root) mini)))
 
+(defun popwin:switch-to-buffer (buffer-or-name &optional norecord)
+  "Call `switch-to-buffer' without popwin."
+  (let (display-buffer-function)
+    (switch-to-buffer buffer-or-name norecord)))
+
 (defun popwin:replicate-window-config (window node hfactor vfactor)
   "Replicate NODE of window configuration on WINDOW with
 horizontal factor HFACTOR, and vertical factor VFACTOR."
@@ -142,7 +147,7 @@ horizontal factor HFACTOR, and vertical factor VFACTOR."
           (cdr node)
         (popwin:adjust-window-edges window edges hfactor vfactor)
         (with-selected-window window
-          (switch-to-buffer buffer t))
+          (popwin:switch-to-buffer buffer t))
         (when selected
           (select-window window)))
     (destructuring-bind (dir edges . windows) node
@@ -238,7 +243,7 @@ window-configuration."
           (popwin:create-popup-window-1 root-win size position)
         ;; Mark popup-win being a popup window.
         (with-selected-window popup-win
-          (switch-to-buffer (popwin:empty-buffer) t))
+          (popwin:switch-to-buffer (popwin:empty-buffer) t))
         (popwin:replicate-window-config master-win root hfactor vfactor)
         (list master-win popup-win)))))
 
@@ -410,7 +415,7 @@ BUFFER."
               popwin:selected-window (selected-window))
         (popwin:start-close-popup-window-timer))))
   (with-selected-window popwin:popup-window
-    (switch-to-buffer buffer))
+    (popwin:switch-to-buffer buffer))
   (setq popwin:popup-buffer buffer
         popwin:popup-window-stuck-p stick)
   (if noselect
