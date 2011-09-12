@@ -71,13 +71,16 @@
 
 ;;; Common API
 
-(defmacro popwin:without-popwin (&rest body)
-  "Evaluate BODY with disabling popwin."
-  `(let (display-buffer-function special-display-function) ,@body))
+(defmacro popwin:save-selected-window (&rest body)
+  "Evaluate BODY saving the selected window."
+  `(with-selected-window (selected-window) ,@body))
 
 (defun popwin:switch-to-buffer (buffer-or-name &optional norecord)
-  "Call `switch-to-buffer' without popwin."
-  (popwin:without-popwin (switch-to-buffer buffer-or-name norecord)))
+  "Call `switch-to-buffer' forcing BUFFER-OF-NAME be displayed in
+the selected window."
+  (if (>= emacs-major-version 24)
+      (switch-to-buffer buffer-or-name norecord t)
+    (switch-to-buffer buffer-or-name norecord)))
 
 (defun popwin:last-selected-window ()
   "Return currently selected window or lastly selected window if
@@ -229,7 +232,8 @@ window-configuration."
          (root-win (popwin:last-selected-window))
          (hfactor 1)
          (vfactor 1))
-    (delete-other-windows root-win)
+    (popwin:save-selected-window
+     (delete-other-windows root-win))
     (let ((root-width (window-width root-win))
           (root-height (window-height root-win)))
       (when adjust
@@ -446,6 +450,10 @@ be closed by `popwin:close-popup-window'."
 
 ;;; Special Display
 
+(defmacro popwin:without-special-display (&rest body)
+  "Evaluate BODY without special displaying."
+  `(let (display-buffer-function special-display-function) ,@body))
+
 (defcustom popwin:special-display-config
   '(("*Help*")
     ("*Completions*" :noselect t)
@@ -489,7 +497,7 @@ buffers will be shown at the left of the frame with width 80."
 
 (defun popwin:original-display-buffer (buffer &optional not-this-window)
   "Call `display-buffer' for BUFFER without special displaying."
-  (popwin:without-popwin
+  (popwin:without-special-display
    ;; Close the popup window here so that the popup window won't to
    ;; be splitted.
    (when (and (eq (selected-window) popwin:popup-window)
