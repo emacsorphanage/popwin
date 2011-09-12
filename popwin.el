@@ -4,7 +4,7 @@
 
 ;; Author: Tomohiro Matsuyama <tomo@cx4a.org>
 ;; Keywords: convenience
-;; Version: 0.3
+;; Version: 0.4
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -71,10 +71,13 @@
 
 ;;; Common API
 
+(defmacro popwin:without-popwin (&rest body)
+  "Evaluate BODY with disabling popwin."
+  `(let (display-buffer-function special-display-function) ,@body))
+
 (defun popwin:switch-to-buffer (buffer-or-name &optional norecord)
   "Call `switch-to-buffer' without popwin."
-  (let (display-buffer-function)
-    (switch-to-buffer buffer-or-name norecord)))
+  (popwin:without-popwin (switch-to-buffer buffer-or-name norecord)))
 
 (defun popwin:last-selected-window ()
   "Return currently selected window or lastly selected window if
@@ -486,13 +489,13 @@ buffers will be shown at the left of the frame with width 80."
 
 (defun popwin:original-display-buffer (buffer &optional not-this-window)
   "Call `display-buffer' for BUFFER without special displaying."
-  (let (display-buffer-function special-display-function)
-    ;; Close the popup window here so that the popup window won't to
-    ;; be splitted.
-    (when (and (eq (selected-window) popwin:popup-window)
-               (not (same-window-p (buffer-name buffer))))
-      (popwin:close-popup-window))
-    (display-buffer buffer not-this-window)))
+  (popwin:without-popwin
+   ;; Close the popup window here so that the popup window won't to
+   ;; be splitted.
+   (when (and (eq (selected-window) popwin:popup-window)
+              (not (same-window-p (buffer-name buffer))))
+     (popwin:close-popup-window))
+   (display-buffer buffer not-this-window)))
 
 (defun* popwin:display-buffer-1 (buffer-or-name &key default-config-keywords if-buffer-not-found if-config-not-found)
   "Display BUFFER-OR-NAME, if possible, in a popup
