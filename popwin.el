@@ -69,7 +69,7 @@
 
 
 
-;;; Common API
+;;; Common
 
 (defmacro popwin:save-selected-window (&rest body)
   "Evaluate BODY saving the selected window."
@@ -93,6 +93,12 @@ minibuffer window is selected."
 (defun popwin:buried-buffer-p (buffer)
   "Return t if BUFFER might be thought of as a buried buffer."
   (eq (car (last (buffer-list))) buffer))
+
+(defun popwin:called-interactively-p ()
+  (with-no-warnings
+    (if (>= emacs-major-version 23)
+        (called-interactively-p 'any)
+      (called-interactively-p))))
 
 (defvar popwin:empty-buffer nil
   "Marker buffer of indicating a window of the buffer is being a
@@ -504,7 +510,13 @@ buffers will be shown at the left of the frame with width 80."
    (when (and (eq (selected-window) popwin:popup-window)
               (not (same-window-p (buffer-name buffer))))
      (popwin:close-popup-window))
-   (display-buffer buffer not-this-window)))
+   (if (and (>= emacs-major-version 24)
+            (boundp 'action)
+            (boundp 'frame))
+       ;; Use variables ACTION and FRAME which are formal parameters
+       ;; of DISPLAY-BUFFER.
+       (display-buffer buffer action frame)
+     (display-buffer buffer not-this-window))))
 
 (defun* popwin:display-buffer-1 (buffer-or-name &key default-config-keywords if-buffer-not-found if-config-not-found)
   "Display BUFFER-OR-NAME, if possible, in a popup
@@ -565,9 +577,9 @@ usual. This function can be used as a value of
   (popwin:display-buffer-1
    buffer-or-name
    :if-config-not-found
-   (unless (interactive-p)
-     (lambda (buffer-or-name)
-       (popwin:original-display-buffer buffer-or-name not-this-window)))))
+   (unless (popwin:called-interactively-p)
+     (lambda (buffer)
+       (popwin:original-display-buffer buffer not-this-window)))))
 
 (defun popwin:special-display-popup-window (buffer &rest ignore)
   "The `special-display-function' with a popup window."
