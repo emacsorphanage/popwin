@@ -471,9 +471,10 @@ be closed by `popwin:close-popup-window'."
 `popwin:special-display-popup-window'. The value is a list of
 CONFIG as a form of (PATTERN . KEYWORDS) where PATTERN is a
 pattern of specifying buffer and KEYWORDS is a list of a pair of
-key and value. PATTERN is in general a buffer name, otherwise a
-symbol specifying major-mode of buffer. If CONFIG is a string or
-a symbol, PATTERN will be CONFIG and KEYWORDS will be
+key and value. PATTERN is in general a buffer name, a symbol
+specifying major-mode of buffer, or a predicate function which
+takes one argument: the buffer. If CONFIG is a string or a
+symbol, PATTERN will be CONFIG and KEYWORDS will be
 empty. Available keywords are following:
 
   regexp: If the value is non-nil, PATTERN will be used as regexp
@@ -551,6 +552,8 @@ specifies default values of the selected config."
                                 (string= pattern name))
                                ((symbolp pattern)
                                 (eq pattern mode))
+                               ((functionp pattern)
+                                (funcall pattern buffer))
                                (t (error "Invalid pattern: %s" pattern)))))
             (when matched
               (setq found t
