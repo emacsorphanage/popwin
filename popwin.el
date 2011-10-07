@@ -146,6 +146,11 @@ with persistent representations."
       (window-tree)
     (list (popwin:window-config-tree-1 root) mini)))
 
+(defun popwin:switch-to-buffer (buffer-or-name &optional norecord)
+  "Call `switch-to-buffer' without popwin."
+  (let (display-buffer-function)
+    (switch-to-buffer buffer-or-name norecord)))
+
 (defun popwin:replicate-window-config (window node hfactor vfactor)
   "Replicate NODE of window configuration on WINDOW with
 horizontal factor HFACTOR, and vertical factor VFACTOR."
