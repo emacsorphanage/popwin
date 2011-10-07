@@ -468,11 +468,13 @@ be closed by `popwin:close-popup-window'."
     ("*Occur*" :noselect t))
   "Configuration of special displaying buffer for
 `popwin:display-buffer' and
-`popwin:special-display-popup-window'. The value is a list
-of (PATTERN . KEYWORDS) where PATTERN is a pattern of specifying
-buffer and KEYWORDS is a list of a pair of key and value. PATTERN
-is in general a buffer name, otherwise a symbol specifying
-major-mode of buffer. Available keyword are following:
+`popwin:special-display-popup-window'. The value is a list of
+CONFIG as a form of (PATTERN . KEYWORDS) where PATTERN is a
+pattern of specifying buffer and KEYWORDS is a list of a pair of
+key and value. PATTERN is in general a buffer name, otherwise a
+symbol specifying major-mode of buffer. If CONFIG is a string or
+a symbol, PATTERN will be CONFIG and KEYWORDS will be
+empty. Available keywords are following:
 
   regexp: If the value is non-nil, PATTERN will be used as regexp
     to matching buffer.
@@ -539,7 +541,8 @@ specifies default values of the selected config."
         with win-stick
         with found
         until found
-        for (pattern . keywords) in popwin:special-display-config do
+        for config in popwin:special-display-config
+        for (pattern . keywords) = (if (atom config) (list config) config) do
         (destructuring-bind (&key regexp width height position noselect stick)
             (append keywords default-config-keywords)
           (let ((matched (cond ((and (stringp pattern) regexp)
