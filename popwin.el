@@ -96,7 +96,9 @@ minibuffer window is selected."
 
 (defun popwin:called-interactively-p ()
   (with-no-warnings
-    (if (>= emacs-major-version 23)
+    (if (or (>= emacs-major-version 24)
+            (and (= emacs-major-version 23)
+                 (>= emacs-minor-version 2)))
         (called-interactively-p 'any)
       (called-interactively-p))))
 
