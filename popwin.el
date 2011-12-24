@@ -387,22 +387,28 @@ selected again."
   (when popwin:popup-window
     (let* ((window (selected-window))
            (minibuf-window-p (window-minibuffer-p window))
+           (reading-from-minibuf-p
+            (and minibuf-window-p
+                 (not (null (minibuffer-prompt)))))
            (other-window-selected
             (and (not (eq window popwin:focus-window))
                  (not (eq window popwin:popup-window))))
-           (popup-buffer-still-working
+           (popup-buffer-still-alive
             (and (buffer-live-p popwin:popup-buffer)
                  (not (popwin:buried-buffer-p popwin:popup-buffer))))
            (not-stuck-or-closed
             (or (not popwin:popup-window-stuck-p)
                 (not (popwin:popup-window-live-p)))))
-      (if (or force
-              (and (not minibuf-window-p)
-                   not-stuck-or-closed
-                   other-window-selected))
-          (popwin:close-popup-window
-           (and other-window-selected
-                popup-buffer-still-working))))))
+      (when (or force
+                (and (not minibuf-window-p)
+                     not-stuck-or-closed
+                     other-window-selected))
+        (if (not reading-from-minibuf-p)
+            (popwin:close-popup-window
+             (and other-window-selected
+                  popup-buffer-still-alive))
+          (popwin:close-popup-window)
+          (select-window (minibuffer-window)))))))
 
 (defun* popwin:popup-buffer (buffer
                              &key
@@ -520,6 +526,9 @@ buffers will be shown at the left of the frame with width 80."
             (boundp 'frame))
        ;; Use variables ACTION and FRAME which are formal parameters
        ;; of DISPLAY-BUFFER.
+       ;; 
+       ;; TODO use display-buffer-alist instead of
+       ;; display-buffer-function.
        (display-buffer buffer action frame)
      (display-buffer buffer not-this-window))))
 
