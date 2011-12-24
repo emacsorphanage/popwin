@@ -582,7 +582,7 @@ specifies default values of the selected config."
                                    :width win-width
                                    :height win-height
                                    :position win-position
-                                   :noselect (or (minibufferp) win-noselect)
+                                   :noselect win-noselect
                                    :stick win-stick))
           (funcall if-config-not-found buffer))))
 
