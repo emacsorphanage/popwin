@@ -201,11 +201,11 @@ which is a node of `window-tree' and OUTLINE which is a node of
 
 (defun popwin:position-horizontal-p (position)
   "Return t if POSITION is hozirontal."
-  (memq position '(left right)))
+  (and (memq position '(left :left right :right)) t))
 
 (defun popwin:position-vertical-p (position)
   "Return t if POSITION is vertical."
-  (memq position '(top bottom)))
+  (and (memq position '(top :top bottom :bottom)) t))
 
 (defun popwin:create-popup-window-1 (window size position)
   "Create a new window with SIZE at POSITION of WINDOW. The
