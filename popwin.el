@@ -355,14 +355,29 @@ popup buffer.")
                                   popwin:popup-window-dedicated-p
                                   popwin:popup-window-stuck-p
                                   popwin:window-outline)))
+  (defun popwin:current-context ()
+    (loop for var in context-vars
+                collect var
+                collect (symbol-value var)))
+  
+  (defun popwin:use-context (context)
+    (loop for var = (pop context)
+          for val = (pop context)
+          while var
+          do (set var val)))
+
   (defun popwin:push-context ()
-    (push (mapcar 'symbol-value context-vars) popwin:context-stack))
+    (push (popwin:current-context) popwin:context-stack))
 
   (defun popwin:pop-context ()
-    (loop with context = (pop popwin:context-stack)
-          for var in context-vars
-          for val in context
-          do (set var val))))
+    (popwin:use-context (pop popwin:context-stack)))
+
+  (defun popwin:find-context-for-buffer (buffer)
+    (loop with stack = popwin:context-stack
+          for context = (pop stack)
+          while context
+          if (eq buffer (plist-get context 'popwin:popup-buffer))
+          return (list context stack))))
 
 (defun popwin:update-window-references-in-context-stack (map)
   (setq popwin:context-stack (popwin:subsitute-in-tree map popwin:context-stack)))
@@ -445,10 +460,10 @@ the popup window will be closed are followings:
                 (not popup-buffer-alive)
                 popup-buffer-buried
                 popup-buffer-changed-despite-of-dedicated
+                (not popup-window-alive)
                 (and other-window-selected
                      (not minibuf-window-p)
-                     (or (not popwin:popup-window-stuck-p)
-                         (not popup-window-alive))))
+                     (not popwin:popup-window-stuck-p)))
         (if reading-from-minibuf
             (progn
               (popwin:close-popup-window)
@@ -477,22 +492,28 @@ BUFFER."
   (interactive "BPopup buffer:\n")
   (setq buffer (get-buffer buffer))
   (popwin:push-context)
-  (let ((win-outline (car (popwin:window-config-tree))))
-    (destructuring-bind (master-win popup-win win-map)
-        (let ((size (if (popwin:position-horizontal-p position) width height))
-              (adjust popwin:adjust-other-windows))
-          (popwin:create-popup-window size position adjust))
-      (setq popwin:popup-window popup-win
-            popwin:master-window master-win
-            popwin:window-outline win-outline
-            popwin:selected-window (selected-window))
-      (popwin:update-window-references-in-context-stack win-map)
-      (popwin:start-close-popup-window-timer)))
-  (with-selected-window popwin:popup-window
-    (popwin:switch-to-buffer buffer))
-  (setq popwin:popup-buffer buffer
-        popwin:popup-window-dedicated-p dedicated
-        popwin:popup-window-stuck-p stick)
+  (multiple-value-bind (context context-stack)
+      (popwin:find-context-for-buffer buffer)
+    (if context
+        (progn
+          (popwin:use-context context)
+          (setq popwin:context-stack context-stack))
+      (let ((win-outline (car (popwin:window-config-tree))))
+        (destructuring-bind (master-win popup-win win-map)
+            (let ((size (if (popwin:position-horizontal-p position) width height))
+                  (adjust popwin:adjust-other-windows))
+              (popwin:create-popup-window size position adjust))
+          (setq popwin:popup-window popup-win
+                popwin:master-window master-win
+                popwin:window-outline win-outline
+                popwin:selected-window (selected-window))
+          (popwin:update-window-references-in-context-stack win-map)
+          (popwin:start-close-popup-window-timer)))
+      (with-selected-window popwin:popup-window
+        (popwin:switch-to-buffer buffer))
+      (setq popwin:popup-buffer buffer
+            popwin:popup-window-dedicated-p dedicated
+            popwin:popup-window-stuck-p stick)))
   (if noselect
       (setq popwin:focus-window popwin:selected-window)
     (setq popwin:focus-window popwin:popup-window)
