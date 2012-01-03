@@ -36,9 +36,9 @@ Install `popwin.el` into your `load-path` directory. If you have
 `popwin.el` like:
 
     ;; install-elisp
-    (install-elisp "https://github.com/m2ym/popwin-el/raw/master/popwin.el")
+    (install-elisp "https://raw.github.com/m2ym/popwin-el/master/popwin.el")
     ;; auto-install
-    (auto-install-from-url "https://github.com/m2ym/popwin-el/raw/master/popwin.el")
+    (auto-install-from-url "https://raw.github.com/m2ym/popwin-el/master/popwin.el")
 
 And then add the following code into your `.emacs`:
 
