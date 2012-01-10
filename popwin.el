@@ -644,6 +644,24 @@ usual. This function can be used as a value of
       (popwin:display-buffer-1 popwin:last-display-buffer)
     (error "No popup window displayed")))
 
+(defun* popwin:pop-to-buffer-1 (buffer
+                                &key
+                                default-config-keywords
+                                other-window
+                                norecord)
+  (popwin:display-buffer-1 buffer
+                           :default-config-keywords default-config-keywords
+                           :if-config-not-found
+                           (lambda (buffer)
+                             (pop-to-buffer buffer other-window norecord))))
+
+(defun popwin:pop-to-buffer (buffer &optional other-window norecord)
+  "Same as `pop-to-buffer' except that this function will use
+`popwin:display-buffer-1' instead of `display-buffer'."
+  (popwin:pop-to-buffer-1 buffer
+                          :other-window other-window
+                          :norecord norecord))
+
 
 
 ;;; Extensions
