@@ -64,7 +64,12 @@
 
 
 
-;;; Utilities
+;;; Utility
+
+(defun popwin:listify (object)
+  "Return a singleton list of OBJECT if OBJECT is an atom,
+otherwise OBJECT itself."
+  (if (atom object) (list object) object))
 
 (defun popwin:subsitute-in-tree (map tree)
   (if (consp tree)
@@ -72,9 +77,19 @@
             (popwin:subsitute-in-tree map (cdr tree)))
     (or (cdr (assq tree map)) tree)))
 
-(defmacro popwin:save-selected-window (&rest body)
-  "Evaluate BODY saving the selected window."
-  `(with-selected-window (selected-window) ,@body))
+(defun popwin:get-buffer (buffer-or-name &optional if-not-found)
+  "Return a buffer named BUFFER-OR-NAME or BUFFER-OR-NAME itself
+if BUFFER-OR-NAME is a buffer. If BUFFER-OR-NAME is a string and
+such a buffer named BUFFER-OR-NAME not found, a new buffer will
+be returned when IF-NOT-FOUND is :create, or an error reported
+when IF-NOT-FOUND is :error. The default of value of IF-NOT-FOUND
+is :error."
+  (ecase (or if-not-found :error)
+    (:create
+     (get-buffer-create buffer-or-name))
+    (:error
+     (or (get-buffer buffer-or-name)
+         (error "No buffer named %s" buffer-or-name)))))
 
 (defun popwin:switch-to-buffer (buffer-or-name &optional norecord)
   "Call `switch-to-buffer' forcing BUFFER-OF-NAME be displayed in
@@ -84,16 +99,20 @@ the selected window."
         (switch-to-buffer buffer-or-name norecord t)
       (switch-to-buffer buffer-or-name norecord))))
 
+(defun popwin:buried-buffer-p (buffer)
+  "Return t if BUFFER might be thought of as a buried buffer."
+  (eq (car (last (buffer-list))) buffer))
+
+(defmacro popwin:save-selected-window (&rest body)
+  "Evaluate BODY saving the selected window."
+  `(with-selected-window (selected-window) ,@body))
+
 (defun popwin:last-selected-window ()
   "Return currently selected window or lastly selected window if
 minibuffer window is selected."
   (if (minibufferp)
       (minibuffer-selected-window)
     (selected-window)))
-
-(defun popwin:buried-buffer-p (buffer)
-  "Return t if BUFFER might be thought of as a buried buffer."
-  (eq (car (last (buffer-list))) buffer))
 
 (defun popwin:called-interactively-p ()
   (with-no-warnings
@@ -612,18 +631,21 @@ buffers will be shown at the left of the frame with width 80."
        (display-buffer buffer action frame)
      (display-buffer buffer not-this-window))))
 
-(defun* popwin:display-buffer-1 (buffer-or-name &key default-config-keywords if-buffer-not-found if-config-not-found)
+(defun* popwin:display-buffer-1 (buffer-or-name
+                                 &key
+                                 default-config-keywords
+                                 (if-buffer-not-found :create)
+                                 if-config-not-found)
   "Display BUFFER-OR-NAME, if possible, in a popup
 window. Otherwise call IF-CONFIG-NOT-FOUND with BUFFER-OR-NAME if
-it is non-nil. If IF-CONFIG-NOT-FOUND is nil, `display-buffer'
-will be called with `special-display-function' nil. If
-IF-BUFFER-NOT-FOUND is :create, create a buffer named
-BUFFER-OR-NAME if there is no such a
-buffer. DEFAULT-CONFIG-KEYWORDS is a property list which
-specifies default values of the selected config."
-  (loop with buffer = (if (eq if-buffer-not-found :create)
-                          (get-buffer-create buffer-or-name)
-                        (get-buffer buffer-or-name))
+the value is a function. If IF-CONFIG-NOT-FOUND is nil,
+`popwin:popup-buffer' will be called. IF-BUFFER-NOT-FOUND
+indicates what happens when there is no such buffers. If the
+value is :create, create a new buffer named BUFFER-OR-NAME. If
+the value is :error, report an error. The default value
+is :create. DEFAULT-CONFIG-KEYWORDS is a property list which
+specifies default values of the config."
+  (loop with buffer = (popwin:get-buffer buffer-or-name if-buffer-not-found)
         with name = (buffer-name buffer)
         with mode = (buffer-local-value 'major-mode buffer)
         with win-width = popwin:popup-window-width
@@ -634,11 +656,14 @@ specifies default values of the selected config."
         with win-stick
         with found
         until found
-        for config in popwin:special-display-config
-        for (pattern . keywords) = (if (atom config) (list config) config) do
+        for config in (if if-config-not-found
+                          popwin:special-display-config
+                        `(,@popwin:special-display-config t))
+        for (pattern . keywords) = (popwin:listify config) do
         (destructuring-bind (&key regexp width height position noselect dedicated stick)
             (append keywords default-config-keywords)
-          (let ((matched (cond ((and (stringp pattern) regexp)
+          (let ((matched (cond ((eq pattern t) t)
+                               ((and (stringp pattern) regexp)
                                 (string-match pattern name))
                                ((stringp pattern)
                                 (string= pattern name))
@@ -656,18 +681,16 @@ specifies default values of the selected config."
                     win-dedicated dedicated
                     win-stick stick))))
         finally return
-        (if (or found
-                (null if-config-not-found))
-            (progn
-              (setq popwin:last-display-buffer buffer)
-              (popwin:popup-buffer buffer
-                                   :width win-width
-                                   :height win-height
-                                   :position win-position
-                                   :noselect (or (minibufferp) win-noselect)
-                                   :dedicated win-dedicated
-                                   :stick win-stick))
-          (funcall if-config-not-found buffer))))
+        (if (not found)
+            (funcall if-config-not-found buffer)
+          (setq popwin:last-display-buffer buffer)
+          (popwin:popup-buffer buffer
+                               :width win-width
+                               :height win-height
+                               :position win-position
+                               :noselect (or (minibufferp) win-noselect)
+                               :dedicated win-dedicated
+                               :stick win-stick))))
 
 (defun popwin:display-buffer (buffer-or-name &optional not-this-window)
   "Display BUFFER-OR-NAME, if possible, in a popup window, or as
@@ -692,6 +715,24 @@ usual. This function can be used as a value of
   (if (bufferp popwin:last-display-buffer)
       (popwin:display-buffer-1 popwin:last-display-buffer)
     (error "No popup window displayed")))
+
+(defun* popwin:pop-to-buffer-1 (buffer
+                                &key
+                                default-config-keywords
+                                other-window
+                                norecord)
+  (popwin:display-buffer-1 buffer
+                           :default-config-keywords default-config-keywords
+                           :if-config-not-found
+                           (lambda (buffer)
+                             (pop-to-buffer buffer other-window norecord))))
+
+(defun popwin:pop-to-buffer (buffer &optional other-window norecord)
+  "Same as `pop-to-buffer' except that this function will use
+`popwin:display-buffer-1' instead of `display-buffer'."
+  (popwin:pop-to-buffer-1 buffer
+                          :other-window other-window
+                          :norecord norecord))
 
 
 

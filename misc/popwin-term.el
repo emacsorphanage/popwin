@@ -1,4 +1,4 @@
-;;; popwin-pp.el --- Popwin Pp
+;;; popwin-term.el --- Popwin Term
 
 ;; Copyright (C) 2012  Tomohiro Matsuyama
 
@@ -25,18 +25,14 @@
 ;;; Code:
 
 (require 'popwin)
-(require 'pp)
 
-(defadvice pp-display-expression (around popwin:pp-display-expression (expression out-buffer-name) activate)
-  (let (not-found)
-    (popwin:display-buffer-1 out-buffer-name
-                             :if-config-not-found (lambda (buffer) (setq not-found t) ad-do-it))
-    (unless not-found
-      (let ((buffer (get-buffer out-buffer-name)))
-        (with-current-buffer buffer
-          (delete-region (point-min) (point-max))
-          (pp expression buffer)
-          (emacs-lisp-mode))))))
+(defun popwin:term ()
+  (interactive)
+  (popwin:display-buffer-1
+   (or (get-buffer "*terminal*")
+       (save-window-excursion
+         (call-interactively 'term)))
+   :default-config-keywords '(:position :top)))
 
-(provide 'popwin-pp)
-;;; popwin-pp.el ends here
+(provide 'popwin-term)
+;;; popwin-term.el ends here
