@@ -556,18 +556,25 @@ buffers will be shown at the left of the frame with width 80."
        (display-buffer buffer action frame)
      (display-buffer buffer not-this-window))))
 
-(defun* popwin:display-buffer-1 (buffer-or-name &key default-config-keywords if-buffer-not-found if-config-not-found)
+(defun* popwin:display-buffer-1 (buffer-or-name
+                                 &key
+                                 default-config-keywords
+                                 (if-buffer-not-found :create)
+                                 if-config-not-found)
   "Display BUFFER-OR-NAME, if possible, in a popup
 window. Otherwise call IF-CONFIG-NOT-FOUND with BUFFER-OR-NAME if
 it is non-nil. If IF-CONFIG-NOT-FOUND is nil, `display-buffer'
-will be called with `special-display-function' nil. If
-IF-BUFFER-NOT-FOUND is :create, create a buffer named
-BUFFER-OR-NAME if there is no such a
-buffer. DEFAULT-CONFIG-KEYWORDS is a property list which
-specifies default values of the selected config."
-  (loop with buffer = (if (eq if-buffer-not-found :create)
-                          (get-buffer-create buffer-or-name)
-                        (get-buffer buffer-or-name))
+will be called with `special-display-function'
+nil. IF-BUFFER-NOT-FOUND indicates what happens when there is no
+such buffers. If the value is :create, create a new buffer named
+BUFFER-OR-NAME. If the value is :error, report an error. The
+default value is :create. DEFAULT-CONFIG-KEYWORDS is a property
+list which specifies default values of the selected config."
+  (loop with buffer = (ecase if-buffer-not-found
+                        (:create (get-buffer-create buffer-or-name))
+                        (:error
+                         (or (get-buffer buffer-or-name)
+                             (error "No buffer named %s" buffer-or-name))))
         with name = (buffer-name buffer)
         with mode = (buffer-local-value 'major-mode buffer)
         with win-width = popwin:popup-window-width
