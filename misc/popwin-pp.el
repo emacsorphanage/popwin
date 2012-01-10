@@ -30,7 +30,6 @@
 (defadvice pp-display-expression (around popwin:pp-display-expression (expression out-buffer-name) activate)
   (let (not-found)
     (popwin:display-buffer-1 out-buffer-name
-                             :default-config-keywords '(:noselect t)
                              :if-config-not-found (lambda (buffer) (setq not-found t) ad-do-it))
     (unless not-found
       (let ((buffer (get-buffer out-buffer-name)))
