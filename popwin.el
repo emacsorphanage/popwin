@@ -408,6 +408,7 @@ the popup window will be closed are followings:
 * Another window has been selected."
   (when popwin:popup-window
     (let* ((window (selected-window))
+           (window-point (window-point window))
            (window-buffer (window-buffer window))
            (minibuf-window-p
             (window-minibuffer-p window))
@@ -447,7 +448,8 @@ the popup window will be closed are followings:
                 (and popup-buffer-alive
                      (not popup-buffer-buried))))
           (when popup-buffer-changed-desipite-of-dedicated
-            (popwin:switch-to-buffer window-buffer)))))))
+            (popwin:switch-to-buffer window-buffer)
+            (goto-char window-point)))))))
 
 (defun* popwin:popup-buffer (buffer
                              &key
