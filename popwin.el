@@ -103,6 +103,19 @@ the selected window."
   "Return t if BUFFER might be thought of as a buried buffer."
   (eq (car (last (buffer-list))) buffer))
 
+(defun popwin:window-point (window)
+  "Save as `window-point-1'."
+  (if (eq window (selected-window))
+      (with-current-buffer (window-buffer window) (point))
+    (window-point window)))
+
+(defun popwin:set-window-point (window point)
+  "Save as `set-window-point-1'."
+  (if (eq window (selected-window))
+      (with-current-buffer (window-buffer window)
+	(goto-char point))
+    (set-window-point window point)))
+
 (defmacro popwin:save-selected-window (&rest body)
   "Evaluate BODY saving the selected window."
   `(with-selected-window (selected-window) ,@body))
@@ -166,6 +179,7 @@ HFACTOR, and vertical factor VFACTOR."
       (list 'window
             node
             (window-buffer node)
+            (popwin:window-point node)
             (window-edges node)
             (eq (selected-window) node))
     (destructuring-bind (dir edges . windows) node
@@ -185,11 +199,12 @@ horizontal factor HFACTOR, and vertical factor VFACTOR. The
 return value is a association list of mapping from old-window to
 new-window."
   (if (eq (car node) 'window)
-      (destructuring-bind (old-win buffer edges selected)
+      (destructuring-bind (old-win buffer point edges selected)
           (cdr node)
         (popwin:adjust-window-edges window edges hfactor vfactor)
         (with-selected-window window
-          (popwin:switch-to-buffer buffer t))
+          (popwin:switch-to-buffer buffer t)
+          (goto-char point))
         (when selected
           (select-window window))
         `((,old-win . ,window)))
@@ -213,8 +228,10 @@ which is a node of `window-tree' and OUTLINE which is a node of
    ((and (windowp node)
          (eq (car outline) 'window))
     ;; same window
-    (let ((edges (nth 3 outline)))
-      (popwin:adjust-window-edges node edges)))
+    (let ((point (nth 3 outline))
+          (edges (nth 4 outline)))
+      (popwin:adjust-window-edges node edges)
+      (popwin:set-window-point node point)))
    ((or (windowp node)
         (not (eq (car node) (car outline))))
     ;; different structure
@@ -376,8 +393,8 @@ popup buffer.")
                                   popwin:window-outline)))
   (defun popwin:current-context ()
     (loop for var in context-vars
-                collect var
-                collect (symbol-value var)))
+          collect var
+          collect (symbol-value var)))
   
   (defun popwin:use-context (context)
     (loop for var = (pop context)
@@ -453,7 +470,7 @@ the popup window will be closed are followings:
 * Another window has been selected."
   (when popwin:popup-window
     (let* ((window (selected-window))
-           (window-point (window-point window))
+           (window-point (popwin:window-point window))
            (window-buffer (window-buffer window))
            (minibuf-window-p
             (window-minibuffer-p window))
@@ -745,7 +762,7 @@ usual. This function can be used as a value of
 `recenter'ed at the bottom."
   (interactive "bPopup buffer:\n")
   (let ((popup-win (apply 'popwin:popup-buffer same-as-popwin:popup-buffer)))
-    (set-window-point popup-win (point-max))
+    (popwin:set-window-point popup-win (point-max))
     (recenter -2)
     popup-win))
 
