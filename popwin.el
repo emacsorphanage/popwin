@@ -211,9 +211,9 @@ new-window."
     (destructuring-bind (dir edges . windows) node
       (loop while windows
             for sub-node = (pop windows)
-            for next-win = (and windows (split-window window nil (not dir)))
-            collect (popwin:replicate-window-config window sub-node hfactor vfactor)
-            do (setq window next-win)))))
+            for win = window then next-win
+            for next-win = (and windows (split-window win nil (not dir)))
+            append (popwin:replicate-window-config win sub-node hfactor vfactor)))))
 
 (defun popwin:restore-window-outline (node outline)
   "Restore window outline accoding to the structures of NODE
