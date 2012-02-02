@@ -210,15 +210,10 @@ new-window."
         `((,old-win . ,window)))
     (destructuring-bind (dir edges . windows) node
       (loop while windows
-            for w1 = (pop windows) then w2
-            for w2 = (pop windows)
-            for new-win = (split-window window nil (not dir))
-            for map1 = (popwin:replicate-window-config window w1 hfactor vfactor)
-            for map2 = (popwin:replicate-window-config new-win w2 hfactor vfactor)
-            append map1 into map
-            append map2 into map
-            do (setq window new-win)
-            finally return map))))
+            for sub-node = (pop windows)
+            for next-win = (and windows (split-window window nil (not dir)))
+            collect (popwin:replicate-window-config window sub-node hfactor vfactor)
+            do (setq window next-win)))))
 
 (defun popwin:restore-window-outline (node outline)
   "Restore window outline accoding to the structures of NODE
