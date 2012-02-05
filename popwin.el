@@ -476,6 +476,7 @@ the popup window will be closed are followings:
            (quit-requested
             (and (eq last-command 'keyboard-quit)
                  (eq last-command-event ?\C-g)))
+           (orig-this-command this-command)
            (popup-buffer-alive
             (buffer-live-p popwin:popup-buffer))
            (popup-buffer-buried
@@ -496,8 +497,10 @@ the popup window will be closed are followings:
                 (and other-window-selected
                      (not minibuf-window-p)
                      (not popwin:popup-window-stuck-p)))
-        (setq this-command 'popwin:close-popup-window)
-        (run-hooks 'pre-command-hook)
+        (when (and quit-requested
+                   (null orig-this-command))
+          (setq this-command 'popwin:close-popup-window)
+          (run-hooks 'pre-command-hook))
         (if reading-from-minibuf
             (progn
               (popwin:close-popup-window)
@@ -509,8 +512,9 @@ the popup window will be closed are followings:
           (when popup-buffer-changed-despite-of-dedicated
             (popwin:switch-to-buffer window-buffer)
             (goto-char window-point)))
-        (run-hooks 'post-command-hook)
-        (execute-kbd-macro [])))))
+        (when (and quit-requested
+                   (null orig-this-command))
+          (run-hooks 'post-command-hook))))))
 
 (defun* popwin:popup-buffer (buffer
                              &key
