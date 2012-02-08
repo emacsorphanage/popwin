@@ -127,14 +127,6 @@ minibuffer window is selected."
       (minibuffer-selected-window)
     (selected-window)))
 
-(defun popwin:called-interactively-p ()
-  (with-no-warnings
-    (if (or (>= emacs-major-version 24)
-            (and (= emacs-major-version 23)
-                 (>= emacs-minor-version 2)))
-        (called-interactively-p 'any)
-      (called-interactively-p))))
-
 
 
 ;;; Common
@@ -722,7 +714,7 @@ usual. This function can be used as a value of
   (popwin:display-buffer-1
    buffer-or-name
    :if-config-not-found
-   (unless (popwin:called-interactively-p)
+   (unless (called-interactively-p)
      (lambda (buffer)
        (popwin:original-display-buffer buffer not-this-window)))))
 
