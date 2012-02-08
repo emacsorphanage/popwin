@@ -378,6 +378,9 @@ popup buffer.")
                                   popwin:popup-window-dedicated-p
                                   popwin:popup-window-stuck-p
                                   popwin:window-outline)))
+  (defun popwin:valid-context-p (context)
+    (window-live-p (plist-get context 'popwin:popup-window)))
+
   (defun popwin:current-context ()
     (loop for var in context-vars
           collect var
@@ -395,11 +398,13 @@ popup buffer.")
   (defun popwin:pop-context ()
     (popwin:use-context (pop popwin:context-stack)))
 
-  (defun popwin:find-context-for-buffer (buffer)
+  (defun* popwin:find-context-for-buffer (buffer &key valid-only)
     (loop with stack = popwin:context-stack
           for context = (pop stack)
           while context
-          if (eq buffer (plist-get context 'popwin:popup-buffer))
+          if (and (eq buffer (plist-get context 'popwin:popup-buffer))
+                  (or (not valid-only)
+                      (popwin:valid-context-p context)))
           return (list context stack))))
 
 (defun popwin:update-window-references-in-context-stack (map)
@@ -526,7 +531,7 @@ BUFFER."
   (setq buffer (get-buffer buffer))
   (popwin:push-context)
   (multiple-value-bind (context context-stack)
-      (popwin:find-context-for-buffer buffer)
+      (popwin:find-context-for-buffer buffer :valid-only t)
     (if context
         (progn
           (popwin:use-context context)
