@@ -103,19 +103,6 @@ the selected window."
   "Return t if BUFFER might be thought of as a buried buffer."
   (eq (car (last (buffer-list))) buffer))
 
-(defun popwin:window-point (window)
-  "Save as `window-point-1'."
-  (if (eq window (selected-window))
-      (with-current-buffer (window-buffer window) (point))
-    (window-point window)))
-
-(defun popwin:set-window-point (window point)
-  "Save as `set-window-point-1'."
-  (if (eq window (selected-window))
-      (with-current-buffer (window-buffer window)
-	(goto-char point))
-    (set-window-point window point)))
-
 (defmacro popwin:save-selected-window (&rest body)
   "Evaluate BODY saving the selected window."
   `(with-selected-window (selected-window) ,@body))
@@ -131,22 +118,30 @@ minibuffer window is selected."
 
 ;;; Common
 
-(defvar popwin:empty-buffer nil
-  "Marker buffer of indicating a window of the buffer is being a
-popup window.")
+(defvar popwin:dummy-buffer nil)
 
-(defun popwin:empty-buffer ()
-  (if (buffer-live-p popwin:empty-buffer)
-      popwin:empty-buffer
-    (setq popwin:empty-buffer
-          (get-buffer-create " *popwin-empty*"))))
+(defun popwin:dummy-buffer ()
+  (if (buffer-live-p popwin:dummy-buffer)
+      popwin:dummy-buffer
+    (setq popwin:dummy-buffer
+          (get-buffer-create " *popwin-dummy*"))))
+
+(defun popwin:window-point (window)
+  (if (eq window (selected-window))
+      (with-current-buffer (window-buffer window) (point))
+    (window-point window)))
+
+(defun popwin:set-window-point (window point)
+  "Forcely set window-point."
+  (with-current-buffer (popwin:dummy-buffer)
+    (set-window-point window point)))
 
 (defun popwin:window-trailing-edge-adjustable-p (window)
   "Return t if a trailing edge of WINDOW is adjustable."
   (let ((next-window (next-window window)))
     (and (not (eq next-window (frame-first-window)))
          (not (eq (window-buffer next-window)
-                  (popwin:empty-buffer))))))
+                  (popwin:dummy-buffer))))))
 
 (defun* popwin:adjust-window-edges (window
                                     edges
@@ -195,8 +190,8 @@ new-window."
           (cdr node)
         (popwin:adjust-window-edges window edges hfactor vfactor)
         (with-selected-window window
-          (popwin:switch-to-buffer buffer t)
-          (goto-char point))
+          (popwin:switch-to-buffer buffer t))
+        (popwin:set-window-point window point)
         (when selected
           (select-window window))
         `((,old-win . ,window)))
@@ -293,7 +288,7 @@ window-configuration."
           (popwin:create-popup-window-1 root-win size position)
         ;; Mark popup-win being a popup window.
         (with-selected-window popup-win
-          (popwin:switch-to-buffer (popwin:empty-buffer) t))
+          (popwin:switch-to-buffer (popwin:dummy-buffer) t))
         (let ((win-map (popwin:replicate-window-config master-win root hfactor vfactor)))
           (list master-win popup-win win-map))))))
 
