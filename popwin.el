@@ -118,6 +118,8 @@ minibuffer window is selected."
 
 ;;; Common
 
+(defvar popwin:debug nil)
+
 (defvar popwin:dummy-buffer nil)
 
 (defun popwin:dummy-buffer ()
@@ -425,7 +427,9 @@ popup buffer.")
 (defun popwin:close-popup-window-timer ()
   (condition-case var
       (popwin:close-popup-window-if-necessary)
-    (error (message "popwin:close-popup-window-timer: error: %s" var))))
+    (error
+     (message "popwin:close-popup-window-timer: error: %s" var)
+     (when popwin:debug (backtrace)))))
 
 (defun popwin:close-popup-window (&optional keep-selected)
   "Close the popup window and restore to the previous window
