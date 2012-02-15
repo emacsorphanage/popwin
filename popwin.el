@@ -791,7 +791,7 @@ displaying buffers in popup windows temporarily."
 `recenter'ed at the bottom."
   (interactive "bPopup buffer:\n")
   (let ((popup-win (apply 'popwin:popup-buffer same-as-popwin:popup-buffer)))
-    (popwin:set-window-point popup-win (point-max))
+    (set-window-point popup-win (point-max))
     (recenter -2)
     popup-win))
 
