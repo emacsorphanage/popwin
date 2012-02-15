@@ -125,8 +125,12 @@ minibuffer window is selected."
 (defun popwin:dummy-buffer ()
   (if (buffer-live-p popwin:dummy-buffer)
       popwin:dummy-buffer
-    (setq popwin:dummy-buffer
-          (get-buffer-create " *popwin-dummy*"))))
+    (setq popwin:dummy-buffer (get-buffer-create " *popwin-dummy*"))))
+
+(defun popwin:kill-dummy-buffer ()
+  (when (buffer-live-p popwin:dummy-buffer)
+    (kill-buffer popwin:dummy-buffer))
+  (setq popwin:dummy-buffer nil))
 
 (defun popwin:window-point (window)
   (if (eq window (selected-window))
@@ -419,8 +423,7 @@ popup buffer.")
                             'popwin:close-popup-window-timer))))
 
 (defun popwin:stop-close-popup-window-timer ()
-  (when (and (null popwin:context-stack)
-             popwin:close-popup-window-timer)
+  (when popwin:close-popup-window-timer
     (cancel-timer popwin:close-popup-window-timer)
     (setq popwin:close-popup-window-timer nil)))
 
@@ -439,15 +442,17 @@ window will not be selected."
   (when popwin:popup-window
     (unwind-protect
         (progn
-          (when (and (popwin:popup-window-live-p)
-                     (not (one-window-p)))
+          (when (popwin:window-deletable-p popwin:popup-window)
             (delete-window popwin:popup-window))
           (popwin:restore-window-outline (car (window-tree)) popwin:window-outline)
           (when (and (not keep-selected)
                      (window-live-p popwin:selected-window))
             (select-window popwin:selected-window)))
       (popwin:pop-context)
-      (popwin:stop-close-popup-window-timer))))
+      ;; Cleanup if no context left.
+      (when (null popwin:context-stack)
+        (popwin:kill-dummy-buffer)
+        (popwin:stop-close-popup-window-timer)))))
 
 (defun popwin:close-popup-window-if-necessary ()
   "Close the popup window if necessary. The all situations where
