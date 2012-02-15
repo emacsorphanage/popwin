@@ -103,6 +103,13 @@ the selected window."
   "Return t if BUFFER might be thought of as a buried buffer."
   (eq (car (last (buffer-list))) buffer))
 
+(defun popwin:window-deletable-p (window)
+  "Return t if WINDOW is deletable, meaning that WINDOW is alive
+and not a minibuffer's window, plus there is two or more windows."
+  (and (window-live-p window)
+       (not (window-minibuffer-p window))
+       (not (one-window-p))))
+
 (defmacro popwin:save-selected-window (&rest body)
   "Evaluate BODY saving the selected window."
   `(with-selected-window (selected-window) ,@body))
@@ -468,8 +475,7 @@ the popup window will be closed are followings:
     (let* ((window (selected-window))
            (window-point (popwin:window-point window))
            (window-buffer (window-buffer window))
-           (minibuf-window-p
-            (window-minibuffer-p window))
+           (minibuf-window-p (window-minibuffer-p window))
            (reading-from-minibuf
             (and minibuf-window-p
                  (minibuffer-prompt)
