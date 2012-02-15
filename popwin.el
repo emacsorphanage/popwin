@@ -765,6 +765,25 @@ usual. This function can be used as a value of
 
 
 
+;;; Universal Display
+
+(defcustom popwin:universal-display-config '(t)
+  "Same as `popwin:special-display-config' except that this will
+be used for `popwin:universal-display'."
+  :group 'popwin)
+
+(defun popwin:universal-display ()
+  "Call the following command interactively with letting
+`popwin:special-display-config' be
+`popwin:universal-display-config'. This wil be useful when
+displaying buffers in popup windows temporarily."
+  (interactive)
+  (let ((command (key-binding (read-key-sequence "" t)))
+        (popwin:special-display-config popwin:universal-display-config))
+    (call-interactively command)))
+
+
+
 ;;; Extensions
 
 (defun popwin:popup-buffer-tail (&rest same-as-popwin:popup-buffer)
@@ -803,7 +822,7 @@ usual. This function can be used as a value of
 ;;; Keymaps
 
 (defvar popwin:keymap
-  (let ((map (make-keymap)))
+  (let ((map (make-sparse-keymap)))
     (define-key map "b"    'popwin:popup-buffer)
     (define-key map "\C-b" 'popwin:popup-buffer)
     (define-key map "\M-b" 'popwin:popup-buffer-tail)
@@ -820,6 +839,8 @@ usual. This function can be used as a value of
     (define-key map "0"    'popwin:close-popup-window)
     (define-key map "m"    'popwin:messages)
     (define-key map "\C-m" 'popwin:messages)
+    (define-key map "u"    'popwin:universal-display)
+    (define-key map "\C-u" 'popwin:universal-display)
     map)
   "Default keymap for popwin commands. Use like:
 \(global-set-key (kbd \"C-x C-p\") popwin:keymap\)
