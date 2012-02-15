@@ -633,11 +633,17 @@ buffers will be shown at the left of the frame with width 80."
 (defun popwin:original-display-buffer (buffer &optional not-this-window)
   "Call `display-buffer' for BUFFER without special displaying."
   (popwin:without-special-displaying
-   ;; Close the popup window here so that the popup window won't to
-   ;; be splitted.
-   (when (and (eq (selected-window) popwin:popup-window)
-              (not (same-window-p (buffer-name buffer))))
-     (popwin:close-popup-window))
+   (let ((same-window
+          (or (same-window-p (buffer-name buffer))
+              (and (>= emacs-major-version 24)
+                   (boundp 'action)
+                   (consp action)
+                   (eq (car action) 'display-buffer-same-window)))))
+     ;; Close the popup window here so that the popup window won't to
+     ;; be splitted.
+     (when (and (eq (selected-window) popwin:popup-window)
+                (not same-window))
+       (popwin:close-popup-window)))
    (if (and (>= emacs-major-version 24)
             (boundp 'action)
             (boundp 'frame))
