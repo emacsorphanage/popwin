@@ -423,12 +423,21 @@ popup buffer.")
                       (popwin:valid-context-p context)))
           return (list context stack))))
 
-(defun popwin:update-window-references-in-context-stack (map)
-  (setq popwin:context-stack (popwin:subsitute-in-tree map popwin:context-stack)))
-
 (defun popwin:popup-window-live-p ()
   "Return t if `popwin:popup-window' is alive."
   (window-live-p popwin:popup-window))
+
+(defun* popwin:update-window-reference (symbol
+                                        &key
+                                        (map popwin:window-map)
+                                        safe
+                                        recursive)
+  (unless (and safe (not (boundp symbol)))
+    (let ((value (symbol-value symbol)))
+      (set symbol
+           (if recursive
+               (popwin:subsitute-in-tree map value)
+             (or (cdr (assq value map)) value))))))
 
 (defun popwin:start-close-popup-window-timer ()
   (or popwin:close-popup-window-timer
@@ -564,9 +573,9 @@ BUFFER."
                 popwin:master-window master-win
                 popwin:window-outline win-outline
                 popwin:window-map win-map
-                popwin:selected-window (selected-window))
-          (popwin:update-window-references-in-context-stack win-map)
-          (popwin:start-close-popup-window-timer)))
+                popwin:selected-window (selected-window)))
+        (popwin:update-window-reference 'popwin:context-stack :recursive t)
+        (popwin:start-close-popup-window-timer))
       (with-selected-window popwin:popup-window
         (popwin:switch-to-buffer buffer))
       (setq popwin:popup-buffer buffer
