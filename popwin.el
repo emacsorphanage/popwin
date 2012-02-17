@@ -372,6 +372,9 @@ popup buffer.")
   "Original window outline which is obtained by
 `popwin:window-config-tree'.")
 
+(defvar popwin:window-map nil
+  "Mapping from old windows to new windows.")
+
 (defvar popwin:close-popup-window-timer nil
   "Timer of closing the popup window.")
 
@@ -385,7 +388,8 @@ popup buffer.")
                                   popwin:selected-window
                                   popwin:popup-window-dedicated-p
                                   popwin:popup-window-stuck-p
-                                  popwin:window-outline)))
+                                  popwin:window-outline
+                                  popwin:window-map)))
   (defun popwin:valid-context-p (context)
     (window-live-p (plist-get context 'popwin:popup-window)))
 
@@ -554,6 +558,7 @@ BUFFER."
           (setq popwin:popup-window popup-win
                 popwin:master-window master-win
                 popwin:window-outline win-outline
+                popwin:window-map win-map
                 popwin:selected-window (selected-window))
           (popwin:update-window-references-in-context-stack win-map)
           (popwin:start-close-popup-window-timer)))
