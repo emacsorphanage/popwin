@@ -28,16 +28,17 @@
 (require 'browse-url)
 (require 'w3m)
 
-(defcustom popwin:w3m-special-display-config nil
+(defcustom popwin-w3m:w3m-special-display-config nil
   "Special display config for w3m buffers. Each element has a
 form of (URL-REGEXP . KEYWORDS), where URL-REGEXP is a regexp to
 match URL for displaying w3m buffers with popwin, and KEYWORDS is
 same as `popwin:special-display-config'."
   :group 'popwin)
+(defvaralias 'popwin:w3m-special-display-config 'popwin-w3m:w3m-special-display-config)
 
-(defun popwin:w3m-browse-url (url &optional new-session)
+(defun popwin-w3m:w3m-browse-url (url &optional new-session)
   (interactive (browse-url-interactive-arg "Emacs-w3m URL: "))
-  (loop for (pattern . keywords) in popwin:w3m-special-display-config
+  (loop for (pattern . keywords) in popwin-w3m:w3m-special-display-config
         when (and (stringp url) (string-match pattern url))
         return
         (let ((popwin:special-display-config `((w3m-mode ,@keywords))))
@@ -45,6 +46,7 @@ same as `popwin:special-display-config'."
             (w3m-browse-url url new-session)))
         finally return
         (w3m-browse-url url new-session)))
+(defalias 'popwin:w3m-browse-url 'popwin-w3m:w3m-browse-url)
 
 (provide 'popwin-w3m)
 ;;; popwin-w3m.el ends here

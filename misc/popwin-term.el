@@ -26,7 +26,7 @@
 
 (require 'popwin)
 
-(defun popwin:term ()
+(defun popwin-term:term ()
   (interactive)
   (popwin:display-buffer-1
    (or (get-buffer "*terminal*")

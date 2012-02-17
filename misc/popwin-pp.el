@@ -27,7 +27,7 @@
 (require 'popwin)
 (require 'pp)
 
-(defadvice pp-display-expression (around popwin:pp-display-expression (expression out-buffer-name) activate)
+(defadvice pp-display-expression (around popwin-pp:pp-display-expression (expression out-buffer-name) activate)
   (let (not-found)
     (popwin:display-buffer-1 out-buffer-name
                              :if-config-not-found (lambda (buffer) (setq not-found t) ad-do-it))
