@@ -381,6 +381,10 @@ popup buffer.")
 (defvar popwin:close-popup-window-timer-interval 0.01
   "Interval of `popwin:close-popup-window-timer'.")
 
+(defvar popwin:before-popup-hook nil)
+
+(defvar popwin:after-popup-hook nil)
+
 (symbol-macrolet ((context-vars '(popwin:popup-window
                                   popwin:popup-buffer
                                   popwin:master-window
@@ -544,6 +548,7 @@ BUFFER."
   (interactive "BPopup buffer:\n")
   (setq buffer (get-buffer buffer))
   (popwin:push-context)
+  (run-hooks 'popwin:before-popup-hook)
   (multiple-value-bind (context context-stack)
       (popwin:find-context-for-buffer buffer :valid-only t)
     (if context
@@ -571,6 +576,7 @@ BUFFER."
       (setq popwin:focus-window popwin:selected-window)
     (setq popwin:focus-window popwin:popup-window)
     (select-window popwin:popup-window))
+  (run-hooks 'popwin:after-popup-hook)
   popwin:popup-window)
 
 (defun popwin:select-popup-window ()
