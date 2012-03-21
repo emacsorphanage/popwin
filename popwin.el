@@ -41,17 +41,6 @@
 ;; how to display such buffers. See docstring of
 ;; `popwin:special-display-config' for more information.
 ;;
-;; Instead of a recommended way, you can also use popwin by setting
-;; `special-display-function' like:
-;;
-;;     (require 'popwin)
-;;     (setq special-display-function
-;;           'popwin:special-display-popup-window)
-;;
-;; In this case, you need to change `special-display-buffer-names' or
-;; `special-display-regexps' so that popwin takes care of such
-;; buffers.
-;; 
 ;; The default width/height/position of popup window can be changed by
 ;; setting `popwin:popup-window-width', `popwin:popup-window-height',
 ;; and `popwin:popup-window-position'.  You can also change the
@@ -609,7 +598,7 @@ be closed by `popwin:close-popup-window'."
 
 (defmacro popwin:without-special-displaying (&rest body)
   "Evaluate BODY without special displaying."
-  `(let (display-buffer-function special-display-function) ,@body))
+  `(let (display-buffer-function) ,@body))
 
 (defcustom popwin:special-display-config
   '(("*Help*")
@@ -760,7 +749,7 @@ usual. This function can be used as a value of
        (popwin:original-display-buffer buffer not-this-window)))))
 
 (defun popwin:special-display-popup-window (buffer &rest ignore)
-  "The `special-display-function' with a popup window."
+  "Obsolete."
   (popwin:display-buffer-1 buffer))
 
 (defun popwin:display-last-buffer ()

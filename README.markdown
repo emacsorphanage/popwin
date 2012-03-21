@@ -45,14 +45,6 @@ And then add the following code into your `.emacs`:
     (require 'popwin)
     (setq display-buffer-function 'popwin:display-buffer)
 
-There is an alternative way using `special-display-function` like:
-
-    (require 'popwin)
-    (setq special-display-function 'popwin:special-display-popup-window)
-
-In this case, you need to change `special-display-buffer-names` or
-`special-display-regexps` so that popwin sould handle such buffers.
-
 popwin is tested under GNU Emacs 22 or later.
 
 Basic Usage
