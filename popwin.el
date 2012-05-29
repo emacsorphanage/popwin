@@ -1,6 +1,6 @@
 ;;; popwin.el --- Popup Window Manager.
 
-;; Copyright (C) 2011  Tomohiro Matsuyama
+;; Copyright (C) 2011, 2012  Tomohiro Matsuyama
 
 ;; Author: Tomohiro Matsuyama <tomo@cx4a.org>
 ;; Keywords: convenience
@@ -489,6 +489,9 @@ the popup window will be closed are followings:
            (quit-requested
             (and (eq last-command 'keyboard-quit)
                  (eq last-command-event ?\C-g)))
+           (other-window-selected
+            (and (not (eq window popwin:focus-window))
+                 (not (eq window popwin:popup-window))))
            (orig-this-command this-command)
            (popup-buffer-alive
             (buffer-live-p popwin:popup-buffer))
@@ -496,12 +499,11 @@ the popup window will be closed are followings:
             (popwin:buried-buffer-p popwin:popup-buffer))
            (popup-buffer-changed-despite-of-dedicated
             (and popwin:popup-window-dedicated-p
+                 (or (not other-window-selected)
+                     (not reading-from-minibuf))
                  (buffer-live-p window-buffer)
                  (not (eq popwin:popup-buffer window-buffer))))
-           (popup-window-alive (popwin:popup-window-live-p))
-           (other-window-selected
-            (and (not (eq window popwin:focus-window))
-                 (not (eq window popwin:popup-window)))))
+           (popup-window-alive (popwin:popup-window-live-p)))
       (when (or quit-requested
                 (not popup-buffer-alive)
                 popup-buffer-buried
