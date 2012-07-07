@@ -776,6 +776,8 @@ usual. This function can be used as a value of
 (defun popwin:pop-to-buffer (buffer &optional other-window norecord)
   "Same as `pop-to-buffer' except that this function will use
 `popwin:display-buffer-1' instead of `display-buffer'."
+  (interactive (list (read-buffer "Pop to buffer: " (other-buffer))
+                     (if current-prefix-arg t)))
   (popwin:pop-to-buffer-1 buffer
                           :other-window other-window
                           :norecord norecord))
@@ -875,7 +877,8 @@ Keymap:
 | s, C-s | popwin:select-popup-window |
 | M-s    | popwin:stick-popup-window  |
 | 0      | popwin:close-popup-window  |
-| m, C-m | popwin:messages            |")
+| m, C-m | popwin:messages            |
+| u, C-u | popwin:universal-display   |")
 
 (provide 'popwin)
 ;;; popwin.el ends here
