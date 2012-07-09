@@ -364,6 +364,9 @@ popup buffer.")
 (defvar popwin:window-map nil
   "Mapping from old windows to new windows.")
 
+(defvar popwin:window-config nil
+  "An original window configuration for restoreing.")
+
 (defvar popwin:close-popup-window-timer nil
   "Timer of closing the popup window.")
 
@@ -516,17 +519,23 @@ the popup window will be closed are followings:
                    (null orig-this-command))
           (setq this-command 'popwin:close-popup-window)
           (run-hooks 'pre-command-hook))
-        (if reading-from-minibuf
-            (progn
-              (popwin:close-popup-window)
-              (select-window (minibuffer-window)))
+        (cond
+         ((and quit-requested
+               (null orig-this-command)
+               popwin:window-config)
+          (set-window-configuration popwin:window-config)
+          (setq popwin:window-config nil))
+         (reading-from-minibuf
+          (popwin:close-popup-window)
+          (select-window (minibuffer-window)))
+         (t
           (popwin:close-popup-window
            (and other-window-selected
                 (and popup-buffer-alive
                      (not popup-buffer-buried))))
           (when popup-buffer-changed-despite-of-dedicated
             (popwin:switch-to-buffer window-buffer)
-            (goto-char window-point)))
+            (goto-char window-point))))
         (when (and quit-requested
                    (null orig-this-command))
           (run-hooks 'post-command-hook)
@@ -565,6 +574,7 @@ BUFFER."
                 popwin:master-window master-win
                 popwin:window-outline win-outline
                 popwin:window-map win-map
+                popwin:window-config nil
                 popwin:selected-window (selected-window)))
         (popwin:update-window-reference 'popwin:context-stack :recursive t)
         (popwin:start-close-popup-window-timer))
@@ -805,6 +815,13 @@ displaying buffers in popup windows temporarily."
 
 
 ;;; Extensions
+
+(defun popwin:one-window ()
+  "Delete other window than the popup window. C-g restores the
+original window configuration."
+  (interactive)
+  (setq popwin:window-config (current-window-configuration))
+  (delete-other-windows))
 
 (defun popwin:popup-buffer-tail (&rest same-as-popwin:popup-buffer)
   "Same as `popwin:popup-buffer' except that the buffer will be

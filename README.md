@@ -289,6 +289,12 @@ Show the lastly shown buffer in a popup window.
 
 Same as `popwin:display-buffer`, but behaves like `pop-to-buffer`.
 
+### Command: `popwin:one-window`
+
+Same like `C-x 1` except that `C-g` restore the original window
+configuration. This is useful when you see the contents of the popup
+window in full window temporarily.
+
 ### Command: `popup:find-file`
 
 `find-file` in a popup window.
