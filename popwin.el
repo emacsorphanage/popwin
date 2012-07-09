@@ -529,7 +529,8 @@ the popup window will be closed are followings:
             (goto-char window-point)))
         (when (and quit-requested
                    (null orig-this-command))
-          (run-hooks 'post-command-hook))))))
+          (run-hooks 'post-command-hook)
+          (setq last-command 'popwin:close-popup-window))))))
 
 (defun* popwin:popup-buffer (buffer
                              &key
