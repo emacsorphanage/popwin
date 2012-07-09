@@ -878,6 +878,7 @@ original window configuration."
     (define-key map "\C-m" 'popwin:messages)
     (define-key map "u"    'popwin:universal-display)
     (define-key map "\C-u" 'popwin:universal-display)
+    (define-key map "1"    'popwin:one-window)
     map)
   "Default keymap for popwin commands. Use like:
 \(global-set-key (kbd \"C-x C-p\") popwin:keymap\)
