@@ -1,4 +1,5 @@
 (require 'popwin)
+(require 'ert)
 
 (defmacro test (explain &rest body)
   (declare (indent 1))
@@ -47,31 +48,105 @@
   (switch-to-buffer buf1)
   (popwin:popup-buffer buf2))
 
+(defun popup-front-p (buffer)
+  (get-window-with-predicate
+   (lambda (window)
+     (eq (window-buffer) buffer)
+     )))
+
+(defmacro popup-test-helper (&rest body)
+  `(save-excursion
+    (save-window-excursion
+      (save-window-excursion
+        (delete-other-windows)
+        (let ((buf1 (get-buffer-create "*buf1*"))
+              (buf2 (get-buffer-create "*buf2*"))
+              (buf3 (get-buffer-create "*buf3*"))
+              (right  (nth 2 (window-edges)))
+              (bottom (nth 3 (window-edges))))
+          (switch-to-buffer buf1)
+          ,@body
+          (kill-buffer buf2);; cleanup
+          )))))
+
+(ert-deftest popup ()
+  (popup-test-helper
+   (popwin:popup-buffer buf2)
+   (should (popup-front-p buf2))))
+
 (ui-test "popup?"
   (switch-to-buffer buf1)
   (split-window-horizontally)
   (popwin:popup-buffer buf2))
+
+(ert-deftest popup-when-split-horizontally ()
+    (popup-test-helper
+     (split-window-horizontally)
+     (popwin:popup-buffer buf2)
+     (should (popup-front-p buf2))))
 
 (ui-test "popup?"
   (switch-to-buffer buf1)
   (split-window-vertically)
   (popwin:popup-buffer buf2))
 
+(ert-deftest popup-when-split-vertically ()
+  (popup-test-helper
+    (split-window-vertically)
+    (popwin:popup-buffer buf2)
+    (should (popup-front-p buf2))))
+
 (ui-test "popup at bottom?"
   (switch-to-buffer buf1)
   (popwin:popup-buffer buf2 :position 'bottom))
+
+(ert-deftest popup-at-bottom ()
+  (popup-test-helper
+    (popwin:popup-buffer buf2 :position 'bottom)
+    (should (popup-front-p buf2))
+    (should (eq (nth 0 (window-edges)) 0))
+    (should-not (eq (nth 1 (window-edges)) 0))
+    (should (eq (nth 2 (window-edges)) right))
+    (should (eq (nth 3 (window-edges)) bottom))))
 
 (ui-test "popup at left?"
   (switch-to-buffer buf1)
   (popwin:popup-buffer buf2 :position 'left))
 
+(ert-deftest popup-at-left ()
+  (popup-test-helper
+    (popwin:popup-buffer buf2 :position 'left)
+    (should (popup-front-p buf2))
+    (should (eq (nth 0 (window-edges)) 0))
+    (should (eq (nth 1 (window-edges)) 0))
+    (should-not (eq (nth 2 (window-edges)) right))
+    (should (eq (nth 3 (window-edges)) bottom))))
+
 (ui-test "popup at top?"
   (switch-to-buffer buf1)
   (popwin:popup-buffer buf2 :position 'top))
 
+(ert-deftest popup-at-top ()
+  (popup-test-helper
+    (popwin:popup-buffer buf2 :position 'top)
+    (should (eq (nth 0 (window-edges)) 0))
+    (should (eq (nth 1 (window-edges)) 0))
+    (should (eq (nth 2 (window-edges)) right))
+    (should-not (eq (nth 3 (window-edges)) bottom))
+    (should (popup-front-p buf2))))
+
 (ui-test "popup at right?"
   (switch-to-buffer buf1)
   (popwin:popup-buffer buf2 :position 'right))
+
+(ert-deftest popup-at-right ()
+  (popup-test-helper
+    (popwin:popup-buffer buf2 :position 'right)
+    (should-not (eq (nth 0 (window-edges)) 0))
+    (should (eq (nth 1 (window-edges)) 0))
+    (should (eq (nth 2 (window-edges)) right))
+    (should (eq (nth 3 (window-edges)) bottom))
+    (should (popup-front-p buf2))))
 
 (ui-test "popup at bottom with 50%?"
   (switch-to-buffer buf1)
