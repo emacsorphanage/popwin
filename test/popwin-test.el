@@ -263,20 +263,16 @@
 
 (ert-deftest popup-buf1-again ()
   (popwin-test:common
-    (popwin:display-buffer buf1)
-    (should (eq popwin:last-display-buffer buf1));fail
+    (let ((popwin:special-display-config '(("*buf1*"))))
+      (popwin:display-buffer buf1))
+    (should (eq popwin:last-display-buffer buf1))
+    (popwin:close-popup-window)
     (switch-to-buffer buf2)
     (should-not (popwin-test:front-buffer-p buf1))
     (should-not (eq (length (window-list)) 2))
-    (should (eq popwin:last-display-buffer buf1))
     (popwin:display-last-buffer)
     (should (popwin-test:front-buffer-p buf1))
     (should (eq (length (window-list)) 2))))
-
-(ui-test "display *buf2* normally?"
-  (switch-to-buffer buf1)
-  (let (popwin:special-display-config)
-    (popwin:display-buffer buf2)))
 
 (ert-deftest popup-buf1-normally ()
   (popwin-test:common
@@ -347,11 +343,10 @@
   (popwin-test:common
     (switch-to-buffer buf1)
     (popwin-test:store-minibuffer-input "popwin-test.el RET")
-    (call-interactively 'popwin:find-file)
+    (call-interactively 'popwin:find-file-tail)
     (should (popwin-test:front-buffer-p (get-buffer-create "popwin-test.el")))
     (should (eq (length (window-list)) 2))
-    (should (eobp));fail
-    ))
+    (should (eobp))))
 
 (ert-deftest messages ()
   (popwin-test:common
