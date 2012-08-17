@@ -548,10 +548,12 @@ the popup window will be closed are followings:
                              (position popwin:popup-window-position)
                              noselect
                              dedicated
-                             stick)
+                             stick
+                             tail)
   "Show BUFFER in a popup window and return the popup window. If
 NOSELECT is non-nil, the popup window will not be selected. If
-STICK is non-nil, the popup window will be stuck. Calling
+STICK is non-nil, the popup window will be stuck. If TAIL is
+non-nil, the popup window will show the last contents. Calling
 `popwin:popup-buffer' during `popwin:popup-buffer' is allowed. In
 that case, the buffer of the popup window will be replaced with
 BUFFER."
@@ -579,7 +581,10 @@ BUFFER."
         (popwin:update-window-reference 'popwin:context-stack :recursive t)
         (popwin:start-close-popup-window-timer))
       (with-selected-window popwin:popup-window
-        (popwin:switch-to-buffer buffer))
+        (popwin:switch-to-buffer buffer)
+        (when tail
+          (set-window-point popwin:popup-window (point-max))
+          (recenter -2)))
       (setq popwin:popup-buffer buffer
             popwin:popup-window-dedicated-p dedicated
             popwin:popup-window-stuck-p stick)))
@@ -654,6 +659,9 @@ empty. Available keywords are following:
   stick: If the value is non-nil, the popup window will be stuck
     when it is shown.
 
+  tail: If the value is non-nil, the popup window will show the
+    last contents.
+
 Examples: With '(\"*scratch*\" :height 30 :position top),
 *scratch* buffer will be shown at the top of the frame with
 height 30. With '(dired-mode :width 80 :position left), dired
@@ -711,13 +719,14 @@ specifies default values of the config."
         with win-noselect
         with win-dedicated
         with win-stick
+        with win-tail
         with found
         until found
         for config in (if if-config-not-found
                           popwin:special-display-config
                         `(,@popwin:special-display-config t))
         for (pattern . keywords) = (popwin:listify config) do
-        (destructuring-bind (&key regexp width height position noselect dedicated stick)
+        (destructuring-bind (&key regexp width height position noselect dedicated stick tail)
             (append keywords default-config-keywords)
           (let ((matched (cond ((eq pattern t) t)
                                ((and (stringp pattern) regexp)
@@ -736,7 +745,8 @@ specifies default values of the config."
                     win-position (or position win-position)
                     win-noselect noselect
                     win-dedicated dedicated
-                    win-stick stick))))
+                    win-stick stick
+                    win-tail tail))))
         finally return
         (if (not found)
             (funcall if-config-not-found buffer)
@@ -747,7 +757,8 @@ specifies default values of the config."
                                :position win-position
                                :noselect (or (minibufferp) win-noselect)
                                :dedicated win-dedicated
-                               :stick win-stick))))
+                               :stick win-stick
+                               :tail win-tail))))
 
 (defun popwin:display-buffer (buffer-or-name &optional not-this-window)
   "Display BUFFER-OR-NAME, if possible, in a popup window, or as
@@ -827,10 +838,8 @@ original window configuration."
   "Same as `popwin:popup-buffer' except that the buffer will be
 `recenter'ed at the bottom."
   (interactive "bPopup buffer:\n")
-  (let ((popup-win (apply 'popwin:popup-buffer same-as-popwin:popup-buffer)))
-    (set-window-point popup-win (point-max))
-    (recenter -2)
-    popup-win))
+  (destructuring-bind (buffer . keyargs) same-as-popwin:popup-buffer
+    (apply 'popwin:popup-buffer buffer :tail t keyargs)))
 
 (defun popwin:find-file (filename &optional wildcards)
   "Edit file FILENAME with popup window by `popwin:popup-buffer'."
