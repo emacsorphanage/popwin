@@ -94,10 +94,22 @@
   (popwin:popup-buffer buf1)
   (popwin:stick-popup-window))
 
+(ert-deftest not-stick ()
+  (popwin-test:common
+    (popwin:popup-buffer buf2)
+    (other-window 1)
+    (sit-for 0.01);; wait for delete window
+    (should (eq (length (window-list)) 1))
+    (should-not (popwin-test:front-buffer-p buf2))))
+
 (ert-deftest stick ()
   (popwin-test:common
     (popwin:popup-buffer buf2)
-    (should (popwin:stick-popup-window))))
+    (should (popwin:stick-popup-window))
+    (other-window 1)
+    (sit-for 0.01);; wait for delete window
+    (should (eq (length (window-list)) 2))
+    (should (popwin-test:front-buffer-p buf2))))
 
 (ert-deftest popup ()
   (popwin-test:common
