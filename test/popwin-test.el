@@ -1,27 +1,8 @@
 (require 'popwin)
 (require 'ert)
 
-(defmacro test (explain &rest body)
-  (declare (indent 1))
-  `(let ((window-config (current-window-configuration)))
-     (unwind-protect
-         (progn
-           (delete-other-windows)
-           (let ((success (progn ,@body)))
-             (set-window-configuration window-config)
-             (unless success
-               (error "failed: %s" ,explain))))
-       (popwin:close-popup-window))))
-
-(defmacro ui-test (prompt &rest body)
-  (declare (indent 1))
-  `(test ,prompt ,@body (yes-or-no-p ,prompt)))
-
 (setq display-buffer-function 'popwin:display-buffer)
 (setq popwin:popup-window-position 'bottom)
-(defvar buf1 (get-buffer-create "*buf1*"))
-(defvar buf2 (get-buffer-create "*buf2*"))
-(defvar buf3 (get-buffer-create "*buf3*"))
 
 (defun popwin-test:front-buffer-p (buffer)
   (get-window-with-predicate
@@ -88,11 +69,6 @@
     (popwin:popup-buffer buf2)
     (should (eq popwin:popup-window
                 (popwin:select-popup-window)))))
-
-(test "stick"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer buf1)
-  (popwin:stick-popup-window))
 
 (ert-deftest not-stick ()
   (popwin-test:common
@@ -269,10 +245,6 @@
     (should (popwin-test:front-buffer-p buf1))
     (should (eq (length (window-list)) 2))))
 
-(ui-test "popup *buf1* again?"
-  (switch-to-buffer buf1)
-  (popwin:display-last-buffer))
-
 (ert-deftest popup-buf1-again ()
   (popwin-test:common
     (let ((popwin:special-display-config '(("*buf1*"))))
@@ -346,10 +318,6 @@
     (should (popwin-test:front-buffer-p (get-buffer-create "popwin-test.el")))
     (should (eq (length (window-list)) 2))
     ))
-
-(ui-test "find-file-tail?"
-  (switch-to-buffer buf1)
-  (call-interactively 'popwin:find-file-tail))
 
 (ert-deftest find-file-tail-interactively ()
   (popwin-test:common
