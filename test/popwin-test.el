@@ -26,7 +26,7 @@
 (defun popwin-test:front-buffer-p (buffer)
   (get-window-with-predicate
    (lambda (window)
-     (eq (window-buffer) buffer))))
+     (eq (window-buffer window) buffer))))
 
 (defmacro popwin-test:common (&rest body)
   (declare (indent 0) (debug t))
@@ -285,8 +285,7 @@
     (let (popwin:special-display-config)
       (popwin:display-buffer buf2))
     (should (eq (length (window-list)) 2))
-    (should (popwin-test:front-buffer-p buf2));; fail
-    ))
+    (should (popwin-test:front-buffer-p buf2))))
 
 (ert-deftest popup-buf1-tail ()
   (popwin-test:common
