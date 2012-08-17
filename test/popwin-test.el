@@ -13,6 +13,7 @@
   (declare (indent 0) (debug t))
   `(save-excursion
     (save-window-excursion
+      (popwin:close-popup-window)
       (delete-other-windows)
       (let ((buf1 (get-buffer-create "*buf1*"))
             (buf2 (get-buffer-create "*buf2*"))
