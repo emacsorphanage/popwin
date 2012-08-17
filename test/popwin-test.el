@@ -343,4 +343,5 @@
 ;; test-case partial-completion-mode nil
 ;; test-case slime-macroexpand-1 loses window focus
 
-(message "Congratulations!")
+(ert-run-tests-interactively t)
+(delete-other-windows)
