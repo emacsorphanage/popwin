@@ -1,236 +1,341 @@
 (require 'popwin)
 (require 'ert)
 
-(defmacro test (explain &rest body)
-  (declare (indent 1))
-  `(let ((window-config (current-window-configuration)))
-     (unwind-protect
-         (progn
-           (delete-other-windows)
-           (let ((success (progn ,@body)))
-             (set-window-configuration window-config)
-             (unless success
-               (error "failed: %s" ,explain))))
-       (popwin:close-popup-window))))
-
-(defmacro ui-test (prompt &rest body)
-  (declare (indent 1))
-  `(test ,prompt ,@body (yes-or-no-p ,prompt)))
-
 (setq display-buffer-function 'popwin:display-buffer)
 (setq popwin:popup-window-position 'bottom)
-(defvar buf1 (get-buffer-create "*buf1*"))
-(defvar buf2 (get-buffer-create "*buf2*"))
-(defvar buf3 (get-buffer-create "*buf3*"))
 
-(test "*buf2* selected?"
-  (switch-to-buffer buf1)
-  (split-window-horizontally)
-  (other-window 1)
-  (switch-to-buffer buf2)
-  (popwin:popup-buffer buf3)
-  (popwin:close-popup-window)
-  (message "%s" (current-buffer))
-  (eq buf2 (current-buffer)))
-
-(test "select"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer buf1)
-  (eq popwin:popup-window
-      (popwin:select-popup-window)))
-
-(test "stick"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer buf1)
-  (popwin:stick-popup-window))
-
-(ui-test "popup?"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer buf2))
-
-(defun popup-front-p (buffer)
+(defun popwin-test:front-buffer-p (buffer)
   (get-window-with-predicate
    (lambda (window)
-     (eq (window-buffer) buffer)
-     )))
+     (eq (window-buffer window) buffer))))
 
-(defmacro popup-test-helper (&rest body)
+(defmacro popwin-test:common (&rest body)
+  (declare (indent 0) (debug t))
   `(save-excursion
     (save-window-excursion
-      (save-window-excursion
-        (delete-other-windows)
-        (let ((buf1 (get-buffer-create "*buf1*"))
-              (buf2 (get-buffer-create "*buf2*"))
-              (buf3 (get-buffer-create "*buf3*"))
-              (right  (nth 2 (window-edges)))
-              (bottom (nth 3 (window-edges))))
-          (switch-to-buffer buf1)
-          ,@body
-          (kill-buffer buf2);; cleanup
-          )))))
+      (delete-other-windows)
+      (let ((buf1 (get-buffer-create "*buf1*"))
+            (buf2 (get-buffer-create "*buf2*"))
+            (buf3 (get-buffer-create "*buf3*"))
+            (right  (nth 2 (window-edges)))
+            (bottom (nth 3 (window-edges))))
+        (switch-to-buffer buf1)
+        ,@body
+        (popwin:close-popup-window)
+        ))))
+
+(defun popwin-test:should-at-top (right bottom)
+  (should (eq (nth 0 (window-edges)) 0))
+  (should (eq (nth 1 (window-edges)) 0))
+  (should (eq (nth 2 (window-edges)) right))
+  (should-not (eq (nth 3 (window-edges)) bottom)))
+
+(defun popwin-test:should-at-bottom (right bottom)
+  (should (eq (nth 0 (window-edges)) 0))
+  (should-not (eq (nth 1 (window-edges)) 0))
+  (should (eq (nth 2 (window-edges)) right))
+  (should (eq (nth 3 (window-edges)) bottom)))
+
+(defun popwin-test:should-at-left (right bottom)
+  (should (eq (nth 0 (window-edges)) 0))
+  (should (eq (nth 1 (window-edges)) 0))
+  (should-not (eq (nth 2 (window-edges)) right))
+  (should (eq (nth 3 (window-edges)) bottom)))
+
+(defun popwin-test:should-at-right (right bottom)
+  (should-not (eq (nth 0 (window-edges)) 0))
+  (should (eq (nth 1 (window-edges)) 0))
+  (should (eq (nth 2 (window-edges)) right))
+  (should (eq (nth 3 (window-edges)) bottom)))
+
+(defun popwin-test:store-minibuffer-input (keys)
+  (setq unread-command-events
+        (append (listify-key-sequence (read-kbd-macro keys))
+                unread-command-events)))
+
+(ert-deftest buf2-selected ()
+  (popwin-test:common
+    (split-window-horizontally)
+    (other-window 1)
+    (popwin:popup-buffer buf2)
+    (switch-to-buffer buf2)
+    (popwin:popup-buffer buf3)
+    (popwin:close-popup-window)
+    (message "%s" (current-buffer))
+    (should (eq buf2 (current-buffer)))))
+
+(ert-deftest select ()
+  (popwin-test:common
+    (popwin:popup-buffer buf2)
+    (should (eq popwin:popup-window
+                (popwin:select-popup-window)))))
+
+(ert-deftest not-stick ()
+  (popwin-test:common
+    (popwin:popup-buffer buf2)
+    (other-window 1)
+    (sit-for 0.01);; wait for delete window
+    (should (eq (length (window-list)) 1))
+    (should-not (popwin-test:front-buffer-p buf2))))
+
+(ert-deftest stick ()
+  (popwin-test:common
+    (popwin:popup-buffer buf2)
+    (should (popwin:stick-popup-window))
+    (other-window 1)
+    (sit-for 0.01);; wait for delete window
+    (should (eq (length (window-list)) 2))
+    (should (popwin-test:front-buffer-p buf2))))
 
 (ert-deftest popup ()
-  (popup-test-helper
-   (popwin:popup-buffer buf2)
-   (should (popup-front-p buf2))))
-
-(ui-test "popup?"
-  (switch-to-buffer buf1)
-  (split-window-horizontally)
-  (popwin:popup-buffer buf2))
+  (popwin-test:common
+    (should-not (eq (length (window-list)) 2))
+    (should-not (popwin-test:front-buffer-p buf2))
+    (popwin:popup-buffer buf2)
+    (should (eq (length (window-list)) 2))
+    (should (popwin-test:front-buffer-p buf2))))
 
 (ert-deftest popup-when-split-horizontally ()
-    (popup-test-helper
-     (split-window-horizontally)
-     (popwin:popup-buffer buf2)
-     (should (popup-front-p buf2))))
-
-(ui-test "popup?"
-  (switch-to-buffer buf1)
-  (split-window-vertically)
-  (popwin:popup-buffer buf2))
+  (popwin-test:common
+    (split-window-horizontally)
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 3))
+    (popwin:popup-buffer buf2)
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 3))))
 
 (ert-deftest popup-when-split-vertically ()
-  (popup-test-helper
+  (popwin-test:common
     (split-window-vertically)
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 3))
     (popwin:popup-buffer buf2)
-    (should (popup-front-p buf2))))
-
-(ui-test "popup at bottom?"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer buf2 :position 'bottom))
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 3))))
 
 (ert-deftest popup-at-bottom ()
-  (popup-test-helper
+  (popwin-test:common
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 2))
     (popwin:popup-buffer buf2 :position 'bottom)
-    (should (popup-front-p buf2))
-    (should (eq (nth 0 (window-edges)) 0))
-    (should-not (eq (nth 1 (window-edges)) 0))
-    (should (eq (nth 2 (window-edges)) right))
-    (should (eq (nth 3 (window-edges)) bottom))))
-
-(ui-test "popup at left?"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer buf2 :position 'left))
+    (popwin-test:should-at-bottom right bottom)
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 2))))
 
 (ert-deftest popup-at-left ()
-  (popup-test-helper
+  (popwin-test:common
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 2))
     (popwin:popup-buffer buf2 :position 'left)
-    (should (popup-front-p buf2))
-    (should (eq (nth 0 (window-edges)) 0))
-    (should (eq (nth 1 (window-edges)) 0))
-    (should-not (eq (nth 2 (window-edges)) right))
-    (should (eq (nth 3 (window-edges)) bottom))))
-
-(ui-test "popup at top?"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer buf2 :position 'top))
+    (popwin-test:should-at-left right bottom)
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 2))))
 
 (ert-deftest popup-at-top ()
-  (popup-test-helper
+  (popwin-test:common
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 2))
     (popwin:popup-buffer buf2 :position 'top)
-    (should (eq (nth 0 (window-edges)) 0))
-    (should (eq (nth 1 (window-edges)) 0))
-    (should (eq (nth 2 (window-edges)) right))
-    (should-not (eq (nth 3 (window-edges)) bottom))
-    (should (popup-front-p buf2))))
-
-(ui-test "popup at right?"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer buf2 :position 'right))
+    (popwin-test:should-at-top right bottom)
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 2))))
 
 (ert-deftest popup-at-right ()
-  (popup-test-helper
+  (popwin-test:common
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 2))
     (popwin:popup-buffer buf2 :position 'right)
-    (should-not (eq (nth 0 (window-edges)) 0))
-    (should (eq (nth 1 (window-edges)) 0))
-    (should (eq (nth 2 (window-edges)) right))
-    (should (eq (nth 3 (window-edges)) bottom))
-    (should (popup-front-p buf2))))
+    (popwin-test:should-at-right right bottom)
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 2))))
 
-(ui-test "popup at bottom with 50%?"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer buf2 :height 0.5 :position 'bottom))
+(ert-deftest popup-at-bottom-with-50% ()
+  (popwin-test:common
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 2))
+    (popwin:popup-buffer buf2 :height 0.5 :position 'bottom)
+    (popwin-test:should-at-bottom right bottom)
+    (should (<= (1- (/ bottom 2)) (nth 1 (window-edges))))
+    (should (<= (nth 1 (window-edges)) (1+ (/ bottom 2))))
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 2))))
 
-(ui-test "popup at left with 50%?"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer buf2 :width 0.5 :position 'left))
+(ert-deftest popup-at-left-with-50% ()
+  (popwin-test:common
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 2))
+    (popwin:popup-buffer buf2 :width 0.5 :position 'left)
+    (should (popwin-test:front-buffer-p buf2))
+    (popwin-test:should-at-left right bottom)
+    (should (<= (1- (/ right 2)) (nth 2 (window-edges))))
+    (should (<= (nth 2 (window-edges)) (1+ (/ right 2))))
+    (should (eq (length (window-list)) 2))))
 
-(ui-test "popup with three columns (bottom)?"
-  (switch-to-buffer buf1)
-  (split-window-vertically)
-  (split-window-vertically)
-  (popwin:popup-buffer buf2 :position 'bottom))
+(ert-deftest popup-at-bottom-with-three-columes ()
+  (popwin-test:common
+    (split-window-vertically)
+    (split-window-vertically)
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 4))
+    (popwin:popup-buffer buf2 :position 'bottom)
+    (popwin-test:should-at-bottom right bottom)
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 4))))
 
-(ui-test "popup with three columns (left)?"
-  (switch-to-buffer buf1)
-  (split-window-horizontally)
-  (split-window-horizontally)
-  (popwin:popup-buffer buf2 :position 'left))
+(ert-deftest popup-at-left-with-three-columes ()
+  (popwin-test:common
+    (split-window-vertically)
+    (split-window-vertically)
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 4))
+    (popwin:popup-buffer buf2 :position 'left)
+    (popwin-test:should-at-left right bottom)
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 4))))
 
-(ui-test "popup with three columns (top)?"
-  (switch-to-buffer buf1)
-  (split-window-vertically)
-  (split-window-vertically)
-  (popwin:popup-buffer buf2 :position 'top))
+(ert-deftest popup-at-top-with-three-columes ()
+  (popwin-test:common
+    (split-window-vertically)
+    (split-window-vertically)
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 4))
+    (popwin:popup-buffer buf2 :position 'top)
+    (popwin-test:should-at-top right bottom)
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 4))))
 
-(ui-test "popup with three columns (right)?"
-  (switch-to-buffer buf1)
-  (split-window-horizontally)
-  (split-window-horizontally)
-  (popwin:popup-buffer buf2 :position 'right))
+(ert-deftest popup-at-right-with-three-columes ()
+  (popwin-test:common
+    (split-window-vertically)
+    (split-window-vertically)
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 4))
+    (popwin:popup-buffer buf2 :position 'right)
+    (should (popwin-test:front-buffer-p buf2))
+    (popwin-test:should-at-right right bottom)
+    (should (eq (length (window-list)) 4))))
 
-(ui-test "popup *buf1*?"
-  (switch-to-buffer buf1)
-  (let ((popwin:special-display-config '(("*buf1*"))))
-    (popwin:display-buffer buf1)))
+(ert-deftest popup-buf1-by-name ()
+  (popwin-test:common
+    (switch-to-buffer buf2)
+    (should-not (popwin-test:front-buffer-p buf1))
+    (should-not (eq (length (window-list)) 2))
+    (let ((popwin:special-display-config '(("*buf1*"))))
+      (popwin:display-buffer buf1))
+    (should (popwin-test:front-buffer-p buf1))
+    (should (eq (length (window-list)) 2))))
 
-(ui-test "popup *buf1*?"
-  (switch-to-buffer buf1)
-  (let ((popwin:special-display-config '((fundamental-mode))))
-    (popwin:display-buffer buf1)))
+(ert-deftest popup-buf1-by-mode ()
+  (popwin-test:common
+    (switch-to-buffer buf2)
+    (should-not (popwin-test:front-buffer-p buf1))
+    (should-not (eq (length (window-list)) 2))
+    (let ((popwin:special-display-config '((fundamental-mode))))
+      (popwin:display-buffer buf1))
+    (should (popwin-test:front-buffer-p buf1))
+    (should (eq (length (window-list)) 2))))
 
-(ui-test "popup *buf1*?"
-  (switch-to-buffer buf1)
-  (let ((popwin:special-display-config '(("\\*buf[0-9]\\*" :regexp t))))
-    (popwin:display-buffer buf1)))
+(ert-deftest popup-buf1-by-regexp ()
+  (popwin-test:common
+    (switch-to-buffer buf2)
+    (should-not (popwin-test:front-buffer-p buf1))
+    (should-not (eq (length (window-list)) 2))
+    (let ((popwin:special-display-config '(("\\*buf[0-9]\\*" :regexp t))))
+      (popwin:display-buffer buf1))
+    (should (popwin-test:front-buffer-p buf1))
+    (should (eq (length (window-list)) 2))))
 
-(ui-test "popup *buf1* again?"
-  (switch-to-buffer buf1)
-  (popwin:display-last-buffer))
+(ert-deftest popup-buf1-again ()
+  (popwin-test:common
+    (let ((popwin:special-display-config '(("*buf1*"))))
+      (popwin:display-buffer buf1))
+    (should (eq popwin:last-display-buffer buf1))
+    (popwin:close-popup-window)
+    (switch-to-buffer buf2)
+    (should-not (popwin-test:front-buffer-p buf1))
+    (should-not (eq (length (window-list)) 2))
+    (popwin:display-last-buffer)
+    (should (popwin-test:front-buffer-p buf1))
+    (should (eq (length (window-list)) 2))))
 
-(ui-test "display *buf2* normally?"
-  (switch-to-buffer buf1)
-  (let (popwin:special-display-config)
-    (popwin:display-buffer buf2)))
+(ert-deftest popup-buf1-normally ()
+  (popwin-test:common
+    (should-not (popwin-test:front-buffer-p buf2))
+    (should-not (eq (length (window-list)) 2))
+    (let (popwin:special-display-config)
+      (popwin:display-buffer buf2))
+    (should (eq (length (window-list)) 2))
+    (should (popwin-test:front-buffer-p buf2))))
 
-(ui-test "popup *buf1* tail"
-  (switch-to-buffer buf1)
-  (popwin:popup-buffer-tail buf1))
+(ert-deftest popup-buf1-tail ()
+  (popwin-test:common
+    (switch-to-buffer buf1)
+    (insert "\n")
+    (beginning-of-buffer)
+    (switch-to-buffer buf2)
+    (should-not (popwin-test:front-buffer-p buf1))
+    (should-not (eq (length (window-list)) 2))
+    (popwin:popup-buffer-tail buf1)
+    (should (eobp))
+    (should (popwin-test:front-buffer-p buf1))
+    (should (eq (length (window-list)) 2))))
 
-(ui-test "popup-buffer interactively?"
-  (switch-to-buffer buf1)
-  (call-interactively 'popwin:popup-buffer))
+(ert-deftest popup-buffer-interactively ()
+  (popwin-test:common
+    (switch-to-buffer buf1)
+    (popwin-test:store-minibuffer-input "*buf2* RET")
+    (call-interactively 'popwin:popup-buffer)
+    ;; Cannot verify whether in minibuffer because call-interactively blocks test
+    ;; (should (minibufferp))
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 2))
+    ))
 
-(ui-test "display-buffer interactively?"
-  (switch-to-buffer buf1)
-  (call-interactively 'popwin:display-buffer))
+(ert-deftest display-buffer-interactively ()
+  (popwin-test:common
+    (switch-to-buffer buf1)
+    (popwin-test:store-minibuffer-input "*buf2* RET")
+    (call-interactively 'popwin:display-buffer)
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 2))
+    ))
 
-(ui-test "popup-buffer-tail interactively?"
-  (switch-to-buffer buf1)
-  (call-interactively 'popwin:popup-buffer-tail))
+(ert-deftest popup-buffer-tail-interactively ()
+  (popwin-test:common
+    (switch-to-buffer buf1)
+    (popwin-test:store-minibuffer-input "*buf2* RET")
+    (call-interactively 'popwin:popup-buffer-tail)
+    (should (eobp))
+    (should (popwin-test:front-buffer-p buf2))
+    (should (eq (length (window-list)) 2))
+    ))
 
-(ui-test "find-file interactively?"
-  (switch-to-buffer buf1)
-  (call-interactively 'popwin:find-file))
+(ert-deftest find-file-interactively ()
+  (popwin-test:common
+    (switch-to-buffer buf1)
+    (popwin-test:store-minibuffer-input "popwin-test.el RET")
+    (call-interactively 'popwin:find-file)
+    (should (popwin-test:front-buffer-p (get-buffer-create "popwin-test.el")))
+    (should (eq (length (window-list)) 2))
+    ))
 
-(ui-test "find-file-tail?"
-  (switch-to-buffer buf1)
-  (call-interactively 'popwin:find-file-tail))
+(ert-deftest find-file-tail-interactively ()
+  (popwin-test:common
+    (switch-to-buffer buf1)
+    (popwin-test:store-minibuffer-input "popwin-test.el RET")
+    (call-interactively 'popwin:find-file-tail)
+    (should (popwin-test:front-buffer-p (get-buffer-create "popwin-test.el")))
+    (should (eq (length (window-list)) 2))
+    (should (eobp))))
 
-(ui-test "messages?"
-  (switch-to-buffer buf1)
-  (call-interactively 'popwin:messages))
+(ert-deftest messages ()
+  (popwin-test:common
+    (switch-to-buffer buf1)
+    (call-interactively 'popwin:messages)
+    (should (popwin-test:front-buffer-p (get-buffer-create "*Messages*")))
+    (should (eq (length (window-list)) 2))
+    ))
+
 
 ;; test-case M-x occur and M-x next-error
 ;; test-case M-x dired and o
