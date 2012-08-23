@@ -339,6 +339,38 @@
     (should (eq (length (window-list)) 2))
     ))
 
+(ert-deftest popup-when-split-vertically-move ()
+  (popwin-test:common
+    (beginning-of-buffer)
+    (split-window-vertically)
+    (forward-char)
+    (let ((points (mapcar 'window-point (window-list))))
+      (should (eq (length points) 2))
+      (should-not (eq (nth 0 points) (nth 1 points))))
+    (popwin:popup-buffer buf2)
+    (call-interactively 'other-window)
+    (popwin:close-popup-window-timer)
+    (let ((points (mapcar 'window-point (window-list))))
+      (should (eq (length points) 2))
+      (should-not (eq (nth 0 points) (nth 1 points))))
+    ))
+
+(ert-deftest popup-when-split-vertically-move-and-other ()
+  (popwin-test:common
+    (beginning-of-buffer)
+    (split-window-vertically)
+    (call-interactively 'other-window)
+    (forward-char)
+    (let ((points (mapcar 'window-point (window-list))))
+      (should (eq (length points) 2))
+      (should-not (eq (nth 0 points) (nth 1 points))))
+    (popwin:popup-buffer buf2)
+    (call-interactively 'other-window)
+    (popwin:close-popup-window-timer)
+    (let ((points (mapcar 'window-point (window-list))))
+      (should (eq (length points) 2))
+      (should-not (eq (nth 0 points) (nth 1 points))))
+    ))
 
 ;; test-case M-x occur and M-x next-error
 ;; test-case M-x dired and o
