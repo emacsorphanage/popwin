@@ -135,8 +135,7 @@ minibuffer window is selected."
 
 (defun popwin:set-window-point (window point)
   "Forcely set window-point."
-  (with-current-buffer (popwin:dummy-buffer)
-    (set-window-point window point)))
+    (set-window-point window point))
 
 (defun popwin:window-trailing-edge-adjustable-p (window)
   "Return t if a trailing edge of WINDOW is adjustable."
