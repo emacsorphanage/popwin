@@ -128,16 +128,6 @@ minibuffer window is selected."
     (kill-buffer popwin:dummy-buffer))
   (setq popwin:dummy-buffer nil))
 
-(defun popwin:window-point (window)
-  (if (eq window (selected-window))
-      (with-current-buffer (window-buffer window) (point))
-    (window-point window)))
-
-(defun popwin:set-window-point (window point)
-  "Forcely set window-point."
-  (with-current-buffer (popwin:dummy-buffer)
-    (set-window-point window point)))
-
 (defun popwin:window-trailing-edge-adjustable-p (window)
   "Return t if a trailing edge of WINDOW is adjustable."
   (let ((next-window (next-window window)))
@@ -168,7 +158,7 @@ HFACTOR, and vertical factor VFACTOR."
       (list 'window
             node
             (window-buffer node)
-            (popwin:window-point node)
+            (window-point node)
             (window-edges node)
             (eq (selected-window) node))
     (destructuring-bind (dir edges . windows) node
@@ -193,9 +183,9 @@ new-window."
         (popwin:adjust-window-edges window edges hfactor vfactor)
         (with-selected-window window
           (popwin:switch-to-buffer buffer t))
-        (popwin:set-window-point window point)
         (when selected
           (select-window window))
+        (set-window-point window point)
         `((,old-win . ,window)))
     (destructuring-bind (dir edges . windows) node
       (loop while windows
@@ -214,8 +204,7 @@ which is a node of `window-tree' and OUTLINE which is a node of
     ;; same window
     (let ((point (nth 3 outline))
           (edges (nth 4 outline)))
-      (popwin:adjust-window-edges node edges)
-      (popwin:set-window-point node point)))
+      (popwin:adjust-window-edges node edges)))
    ((or (windowp node)
         (not (eq (car node) (car outline))))
     ;; different structure
@@ -482,7 +471,7 @@ the popup window will be closed are followings:
 * Another window has been selected."
   (when popwin:popup-window
     (let* ((window (selected-window))
-           (window-point (popwin:window-point window))
+           (window-point (window-point window))
            (window-buffer (window-buffer window))
            (minibuf-window-p (window-minibuffer-p window))
            (reading-from-minibuf
