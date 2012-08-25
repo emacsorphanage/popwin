@@ -77,8 +77,8 @@
   (popwin-test:common
     (popwin:popup-buffer buf2)
     (other-window 1)
-    (sit-for 0.01);; wait for delete window
-    (should (eq (length (window-list)) 1))
+    (popwin:close-popup-window-timer)
+    (should (one-window-p))
     (should-not (popwin-test:front-buffer-p buf2))))
 
 (ert-deftest stick ()
@@ -86,7 +86,7 @@
     (popwin:popup-buffer buf2)
     (should (popwin:stick-popup-window))
     (other-window 1)
-    (sit-for 0.01);; wait for delete window
+    (popwin:close-popup-window-timer)
     (should (eq (length (window-list)) 2))
     (should (popwin-test:front-buffer-p buf2))))
 
