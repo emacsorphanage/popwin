@@ -655,6 +655,36 @@ Examples: With '(\"*scratch*\" :height 30 :position top),
 *scratch* buffer will be shown at the top of the frame with
 height 30. With '(dired-mode :width 80 :position left), dired
 buffers will be shown at the left of the frame with width 80."
+  :type '(repeat
+          (cons :tag "Config"
+                (choice :tag "Pattern"
+                        (string :tag "Buffer Name")
+                        (symbol :tag "Major Mode"))
+                (plist :tag "Keywords"
+                       :value (:regexp nil) ; BUG? need default value
+                       :options
+                       ((:regexp (boolean :tag "On/Off"))
+                        (:width (choice :tag "Width"
+                                        (integer :tag "Width")
+                                        (float :tag "Width (%)")))
+                        (:height (choice :tag "Height"
+                                         (integer :tag "Height")
+                                         (float :tag "Height (%)")))
+                        (:position (choice :tag "Position"
+                                           (const :tag "Bottom" bottom)
+                                           (const :tag "Top" top)
+                                           (const :tag "Left" left)
+                                           (const :tag "Right" right)))
+                        (:noselect (boolean :tag "On/Off"))
+                        (:dedicated (boolean :tag "On/Off"))
+                        (:stick (boolean :tag "On/Off"))
+                        (:tail (boolean :tag "On/Off"))))))
+  :get (lambda (symbol)
+         (mapcar (lambda (element)
+                   (if (consp element)
+                       element
+                     (list element)))
+                 (default-value symbol)))
   :group 'popwin)
 
 (defvar popwin:last-display-buffer nil

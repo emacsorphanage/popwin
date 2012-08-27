@@ -74,8 +74,10 @@ Let me show other examples.
 Customization
 -------------
 
-Please do `M-x customize-group RET popwin RET`. See the header of
-`popwin.el`, source code, and docstrings for more information.
+Please do `M-x customize-group RET popwin RET` and `M-x
+customize-variable RET popwin:special-display-config RET`. See the
+header of `popwin.el`, source code, and docstrings for more
+information.
 
 ### Default Keymap
 
