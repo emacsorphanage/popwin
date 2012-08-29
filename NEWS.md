@@ -1,3 +1,26 @@
+v0.5
+====
+
+New Commands
+------------
+
+- `popwin:onw-window`: Temporarily enlarge a popup window
+
+New Keywords
+------------
+
+- `tail`: Display a popup window with showing the buffer tail contents
+
+Fixed Bugs
+----------
+
+- Restore `window-point` more correctly
+
+Contributors
+------------
+
+- Yuuki Arisawa: Amazingly improve automatic regression tests
+
 v0.4
 ====
 
