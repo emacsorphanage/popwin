@@ -540,6 +540,7 @@ the popup window will be closed are followings:
           (run-hooks 'post-command-hook)
           (setq last-command 'popwin:close-popup-window))))))
 
+;;;###autoload
 (defun* popwin:popup-buffer (buffer
                              &key
                              (width popwin:popup-window-width)
@@ -809,6 +810,7 @@ specifies default values of the config."
                                :stick win-stick
                                :tail win-tail))))
 
+;;;###autoload
 (defun popwin:display-buffer (buffer-or-name &optional not-this-window)
   "Display BUFFER-OR-NAME, if possible, in a popup window, or as
 usual. This function can be used as a value of
@@ -825,6 +827,7 @@ usual. This function can be used as a value of
   "Obsolete."
   (popwin:display-buffer-1 buffer))
 
+;;;###autoload
 (defun popwin:display-last-buffer ()
   "Display the lastly shown buffer by `popwin:display-buffer' and
 `popwin:special-display-popup-window'."
@@ -844,6 +847,7 @@ usual. This function can be used as a value of
                            (lambda (buffer)
                              (pop-to-buffer buffer other-window norecord))))
 
+;;;###autoload
 (defun popwin:pop-to-buffer (buffer &optional other-window norecord)
   "Same as `pop-to-buffer' except that this function will use
 `popwin:display-buffer-1' instead of `display-buffer'."
@@ -862,6 +866,7 @@ usual. This function can be used as a value of
 be used for `popwin:universal-display'."
   :group 'popwin)
 
+;;;###autoload
 (defun popwin:universal-display ()
   "Call the following command interactively with letting
 `popwin:special-display-config' be
@@ -876,6 +881,7 @@ displaying buffers in popup windows temporarily."
 
 ;;; Extensions
 
+;;;###autoload
 (defun popwin:one-window ()
   "Delete other window than the popup window. C-g restores the
 original window configuration."
@@ -883,6 +889,7 @@ original window configuration."
   (setq popwin:window-config (current-window-configuration))
   (delete-other-windows))
 
+;;;###autoload
 (defun popwin:popup-buffer-tail (&rest same-as-popwin:popup-buffer)
   "Same as `popwin:popup-buffer' except that the buffer will be
 `recenter'ed at the bottom."
@@ -890,6 +897,7 @@ original window configuration."
   (destructuring-bind (buffer . keyargs) same-as-popwin:popup-buffer
     (apply 'popwin:popup-buffer buffer :tail t keyargs)))
 
+;;;###autoload
 (defun popwin:find-file (filename &optional wildcards)
   "Edit file FILENAME with popup window by `popwin:popup-buffer'."
   (interactive
@@ -898,6 +906,7 @@ original window configuration."
                           (confirm-nonexistent-file-or-buffer))))
   (popwin:popup-buffer (find-file-noselect filename wildcards)))
 
+;;;###autoload
 (defun popwin:find-file-tail (file &optional wildcard)
   "Edit file FILENAME with popup window by
 `popwin:popup-buffer-tail'."
@@ -907,6 +916,7 @@ original window configuration."
                           (confirm-nonexistent-file-or-buffer))))
   (popwin:popup-buffer-tail (find-file-noselect file wildcard)))
 
+;;;###autoload
 (defun popwin:messages ()
   "Display *Messages* buffer in a popup window."
   (interactive)
