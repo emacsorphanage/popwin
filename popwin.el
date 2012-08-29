@@ -925,7 +925,8 @@ Keymap:
 | M-s    | popwin:stick-popup-window  |
 | 0      | popwin:close-popup-window  |
 | m, C-m | popwin:messages            |
-| u, C-u | popwin:universal-display   |")
+| u, C-u | popwin:universal-display   |
+| 1      | popwin:one-window          |")
 
 (provide 'popwin)
 ;;; popwin.el ends here
