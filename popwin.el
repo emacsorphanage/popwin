@@ -608,10 +608,30 @@ be closed by `popwin:close-popup-window'."
   `(let (display-buffer-function) ,@body))
 
 (defcustom popwin:special-display-config
-  '(("*Help*")
-    ("*Completions*" :noselect t)
-    ("*compilation*" :noselect t)
-    ("*Occur*" :noselect t))
+  '(;; Emacs
+    help-mode
+    (completion-list-mode :noselect t)
+    (compilation-mode :noselect t)
+    (grep-mode :noselect t)
+    (occur-mode :noselect t)
+    ("*Pp Macroexpand Output*" :noselect t)
+    "*Shell Command Output*"
+    ;; VC
+    "*vc-diff*"
+    "*vc-change-log*"
+    ;; Undo-Tree
+    (" *undo-tree*" :width 60 :position right)
+    ;; Anythingp
+    ("^\\*anything.*\\*$" :regexp t)
+    ;; SLIME
+    "*slime-apropos*"
+    "*slime-macroexpansion*"
+    "*slime-description*"
+    ("*slime-compilation*" :noselect t)
+    "*slime-xref*"
+    (sldb-mode :stick t)
+    slime-repl-mode
+    slime-connection-list-mode)
   "Configuration of special displaying buffer for
 `popwin:display-buffer' and
 `popwin:special-display-popup-window'. The value is a list of
