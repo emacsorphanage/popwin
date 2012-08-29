@@ -46,6 +46,16 @@
 ;; and `popwin:popup-window-position'.  You can also change the
 ;; behavior for a specific buffer. See docstring of
 ;; `popwin:special-display-config'.
+;;
+;; If you want to use some useful commands such like
+;; `popwin:popup-buffer' and `popwin:find-file' easily. you may bind
+;; `popwin:keymap' to `C-z', for example, like:
+;;
+;;     (global-set-key (kbd "C-z") popwin:keymap)
+;;
+;; See also `popwin:keymap' documentation.
+;;
+;; Enjoy!
 
 ;;; Code:
 
@@ -621,7 +631,7 @@ be closed by `popwin:close-popup-window'."
     "*vc-change-log*"
     ;; Undo-Tree
     (" *undo-tree*" :width 60 :position right)
-    ;; Anythingp
+    ;; Anything
     ("^\\*anything.*\\*$" :regexp t)
     ;; SLIME
     "*slime-apropos*"
@@ -929,7 +939,7 @@ original window configuration."
     (define-key map "1"    'popwin:one-window)
     map)
   "Default keymap for popwin commands. Use like:
-\(global-set-key (kbd \"C-x C-p\") popwin:keymap\)
+\(global-set-key (kbd \"C-z\") popwin:keymap\)
 
 Keymap:
 
