@@ -1,3 +1,11 @@
+v0.5.1
+======
+
+Fixed Bugs
+----------
+
+- Restore `window-point` more correctly
+
 v0.5
 ====
 
