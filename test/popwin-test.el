@@ -378,6 +378,16 @@
       (should-not (eq (nth 0 points) (nth 1 points))))
     ))
 
+(ert-deftest popwin-will-never-change-the-window-point ()
+  (popwin-test:common
+   (insert "foobar")
+   (let ((old-point (point)))
+     (let ((popwin:special-display-config '((".*" :regexp t :position top))))
+       (pop-to-buffer buf2))
+     (popwin:close-popup-window)
+     (should (eq (current-buffer) buf1))
+     (should (= old-point (point))))))
+
 ;; test-case M-x occur and M-x next-error
 ;; test-case M-x dired and o
 ;; test-case fixed size popwin
