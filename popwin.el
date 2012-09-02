@@ -102,6 +102,14 @@ the selected window."
   "Return t if BUFFER might be thought of as a buried buffer."
   (eq (car (last (buffer-list))) buffer))
 
+(defun popwin:window-point (window)
+  "Return window-point of WINDOW. If WINDOW is currently
+selected, then return buffer-point instead."
+  (if (eq (selected-window) window)
+      (with-current-buffer (window-buffer window)
+        (point))
+    (window-point window)))
+
 (defun popwin:window-deletable-p (window)
   "Return t if WINDOW is deletable, meaning that WINDOW is alive
 and not a minibuffer's window, plus there is two or more windows."
@@ -168,7 +176,7 @@ HFACTOR, and vertical factor VFACTOR."
       (list 'window
             node
             (window-buffer node)
-            (window-point node)
+            (popwin:window-point node)
             (window-edges node)
             (eq (selected-window) node))
     (destructuring-bind (dir edges . windows) node
@@ -481,7 +489,7 @@ the popup window will be closed are followings:
 * Another window has been selected."
   (when popwin:popup-window
     (let* ((window (selected-window))
-           (window-point (window-point window))
+           (window-point (popwin:window-point window))
            (window-buffer (window-buffer window))
            (minibuf-window-p (window-minibuffer-p window))
            (reading-from-minibuf
