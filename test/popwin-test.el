@@ -388,6 +388,15 @@
      (should (eq (current-buffer) buf1))
      (should (= old-point (point))))))
 
+(ert-deftest popwin-restore-window-start ()
+  (popwin-test:common
+   (insert "foo\nbar\n")
+   (set-window-start nil (point-max))
+   (popwin:popup-buffer buf2)
+   (popwin:close-popup-window)
+   (should (eq (current-buffer) buf1))
+   (should (eq (window-start) (point-max)))))
+
 ;; test-case M-x occur and M-x next-error
 ;; test-case M-x dired and o
 ;; test-case fixed size popwin
