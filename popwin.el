@@ -121,10 +121,14 @@ and not a minibuffer's window, plus there is two or more windows."
   "Evaluate BODY saving the selected window."
   `(with-selected-window (selected-window) ,@body))
 
+(defun popwin:minibuffer-window-selected-p ()
+  "Return t if minibuffer window is selected."
+  (minibuffer-window-active-p (selected-window)))
+
 (defun popwin:last-selected-window ()
   "Return currently selected window or lastly selected window if
 minibuffer window is selected."
-  (if (minibufferp)
+  (if (popwin:minibuffer-window-selected-p)
       (minibuffer-selected-window)
     (selected-window)))
 
@@ -817,7 +821,8 @@ specifies default values of the config."
                                :width win-width
                                :height win-height
                                :position win-position
-                               :noselect (or (minibufferp) win-noselect)
+                               :noselect (or (popwin:minibuffer-window-selected-p)
+                                             win-noselect)
                                :dedicated win-dedicated
                                :stick win-stick
                                :tail win-tail))))
