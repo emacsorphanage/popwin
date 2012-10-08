@@ -792,6 +792,15 @@ special displaying."
       (popwin:original-display-buffer (car popwin:popup-last-config))
     (error "No popup buffer ever")))
 
+(defun popwin:switch-to-last-buffer ()
+  "Switch to the last popup buffer."
+  (interactive)
+  (if popwin:popup-last-config
+      (popwin:apply-display-buffer
+       (lambda (buffer &rest ignore) (switch-to-buffer buffer))
+       (car popwin:popup-last-config))
+    (error "No popup buffer ever")))
+
 (defun popwin:original-pop-to-last-buffer ()
   "Call `pop-to-buffer' for the last popup buffer without
 special displaying."
@@ -976,6 +985,7 @@ original window configuration."
     (define-key map "b"    'popwin:popup-buffer)
     (define-key map "l"    'popwin:popup-last-buffer)
     (define-key map "o"    'popwin:display-buffer)
+    (define-key map "\C-b" 'popwin:switch-to-last-buffer)
     (define-key map "\C-p" 'popwin:original-pop-to-last-buffer)
     (define-key map "\C-o" 'popwin:original-display-last-buffer)
     (define-key map " "    'popwin:select-popup-window)
@@ -993,20 +1003,21 @@ original window configuration."
 
 Keymap:
 
-| Key    | Command                             |
-|--------+-------------------------------------|
-| b      | popwin:popup-buffer                 |
-| l      | popwin:popup-last-buffer            |
-| o      | popwin:display-buffer               |
-| C-p    | popwin:original-pop-to-last-buffer  |
-| C-o    | popwin:original-display-last-buffer |
-| SPC    | popwin:select-popup-window          |
-| s      | popwin:stick-popup-window           |
-| 0      | popwin:close-popup-window           |
-| f, C-f | popwin:find-file                    |
-| e      | popwin:messages                     |
-| C-u    | popwin:universal-display            |
-| 1      | popwin:one-window                   |")
+| Key    | Command                               |
+|--------+---------------------------------------|
+| b      | popwin:popup-buffer                   |
+| l      | popwin:popup-last-buffer              |
+| o      | popwin:display-buffer                 |
+| C-b    | popwin:switch-to-last-buffer          |
+| C-p    | popwin:original-pop-to-last-buffer    |
+| C-o    | popwin:original-display-last-buffer   |
+| SPC    | popwin:select-popup-window            |
+| s      | popwin:stick-popup-window             |
+| 0      | popwin:close-popup-window             |
+| f, C-f | popwin:find-file                      |
+| e      | popwin:messages                       |
+| C-u    | popwin:universal-display              |
+| 1      | popwin:one-window                     |")
 
 (provide 'popwin)
 ;;; popwin.el ends here

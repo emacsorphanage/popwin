@@ -415,6 +415,14 @@
    (should (null popwin:popup-buffer))
    (should (eq (current-buffer) buf2))))
 
+(ert-deftest popwin-switch-to-last-buffer ()
+  (popwin-test:common
+   (popwin:popup-buffer buf2)
+   (should (eq popwin:popup-buffer buf2))
+   (popwin:switch-to-last-buffer)
+   (should (null popwin:popup-buffer))
+   (should (eq (current-buffer) buf2))))
+
 ;; test-case M-x occur and M-x next-error
 ;; test-case M-x dired and o
 ;; test-case fixed size popwin
