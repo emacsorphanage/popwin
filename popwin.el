@@ -776,6 +776,14 @@ buffers will be shown at the left of the frame with width 80."
        (display-buffer buffer action frame)
      (display-buffer buffer not-this-window))))
 
+(defun popwin:original-display-last-buffer ()
+  "Call `display-buffer' for the last popup buffer without
+special displaying."
+  (interactive)
+  (if popwin:popup-last-config
+      (popwin:original-display-buffer (car popwin:popup-last-config))
+    (error "No popup buffer ever")))
+
 (defun* popwin:display-buffer-1 (buffer-or-name
                                  &key
                                  default-config-keywords
@@ -952,6 +960,7 @@ original window configuration."
     (define-key map "b"    'popwin:popup-buffer)
     (define-key map "l"    'popwin:popup-last-buffer)
     (define-key map "\C-o" 'popwin:display-buffer)
+    (define-key map "\C-l" 'popwin:original-display-last-buffer)
     (define-key map "o"    'popwin:select-popup-window)
     (define-key map "s"    'popwin:stick-popup-window)
     (define-key map "0"    'popwin:close-popup-window)
@@ -967,18 +976,19 @@ original window configuration."
 
 Keymap:
 
-| Key    | Command                    |
-|--------+----------------------------|
-| b      | popwin:popup-buffer        |
-| l      | popwin:popup-last-buffer |
-| C-o    | popwin:display-buffer      |
-| o      | popwin:select-popup-window |
-| s      | popwin:stick-popup-window  |
-| 0      | popwin:close-popup-window  |
-| f, C-f | popwin:find-file           |
-| e      | popwin:messages            |
-| C-u    | popwin:universal-display   |
-| 1      | popwin:one-window          |")
+| Key    | Command                             |
+|--------+-------------------------------------|
+| b      | popwin:popup-buffer                 |
+| l      | popwin:popup-last-buffer            |
+| C-o    | popwin:display-buffer               |
+| C-l    | popwin:original-display-last-buffer |
+| o      | popwin:select-popup-window          |
+| s      | popwin:stick-popup-window           |
+| 0      | popwin:close-popup-window           |
+| f, C-f | popwin:find-file                    |
+| e      | popwin:messages                     |
+| C-u    | popwin:universal-display            |
+| 1      | popwin:one-window                   |")
 
 (provide 'popwin)
 ;;; popwin.el ends here

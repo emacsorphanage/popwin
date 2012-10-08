@@ -397,6 +397,16 @@
    (should (eq (current-buffer) buf1))
    (should (eq (window-start) (point-max)))))
 
+(ert-deftest popwin-original-display-last-buffer ()
+  (popwin-test:common
+   (popwin:popup-buffer buf2)
+   (should (eq popwin:popup-buffer buf2))
+   (popwin:original-display-last-buffer)
+   (should (null popwin:popup-buffer))
+   (delete-other-windows)
+   (popwin:original-display-last-buffer)
+   (should (null popwin:popup-buffer))))
+
 ;; test-case M-x occur and M-x next-error
 ;; test-case M-x dired and o
 ;; test-case fixed size popwin
