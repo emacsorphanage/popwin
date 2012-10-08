@@ -90,17 +90,15 @@ Keymap:
 
     | Key    | Command                    |
     |--------+----------------------------|
-    | b, C-b | popwin:popup-buffer        |
-    | M-b    | popwin:popup-buffer-tail   |
-    | o, C-o | popwin:display-buffer      |
-    | p, C-p | popwin:display-last-buffer |
-    | f, C-f | popwin:find-file           |
-    | M-f    | popwin:find-file-tail      |
-    | s, C-s | popwin:select-popup-window |
-    | M-s    | popwin:stick-popup-window  |
+    | b      | popwin:popup-buffer        |
+    | C-o    | popwin:display-buffer      |
+    | l      | popwin:display-last-buffer |
+    | o      | popwin:select-popup-window |
+    | s      | popwin:stick-popup-window  |
     | 0      | popwin:close-popup-window  |
-    | m, C-m | popwin:messages            |
-    | u, C-u | popwin:universal-display   |
+    | f, C-f | popwin:find-file           |
+    | e      | popwin:messages            |
+    | C-u    | popwin:universal-display   |
     | 1      | popwin:one-window          |
 
 Special Display Config

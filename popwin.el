@@ -948,24 +948,17 @@ original window configuration."
 (defvar popwin:keymap
   (let ((map (make-sparse-keymap)))
     (define-key map "b"    'popwin:popup-buffer)
-    (define-key map "\C-b" 'popwin:popup-buffer)
-    (define-key map "\M-b" 'popwin:popup-buffer-tail)
-    (define-key map "o"    'popwin:display-buffer)
     (define-key map "\C-o" 'popwin:display-buffer)
-    (define-key map "p"    'popwin:display-last-buffer)
-    (define-key map "\C-p" 'popwin:display-last-buffer)
+    (define-key map "l"    'popwin:display-last-buffer)
+    (define-key map "o"    'popwin:select-popup-window)
+    (define-key map "s"    'popwin:stick-popup-window)
+    (define-key map "0"    'popwin:close-popup-window)
     (define-key map "f"    'popwin:find-file)
     (define-key map "\C-f" 'popwin:find-file)
-    (define-key map "\M-f" 'popwin:find-file-tail)
-    (define-key map "s"    'popwin:select-popup-window)
-    (define-key map "\C-s" 'popwin:select-popup-window)
-    (define-key map "\M-s" 'popwin:stick-popup-window)
-    (define-key map "0"    'popwin:close-popup-window)
-    (define-key map "m"    'popwin:messages)
-    (define-key map "\C-m" 'popwin:messages)
-    (define-key map "u"    'popwin:universal-display)
+    (define-key map "e"    'popwin:messages)
     (define-key map "\C-u" 'popwin:universal-display)
     (define-key map "1"    'popwin:one-window)
+    
     map)
   "Default keymap for popwin commands. Use like:
 \(global-set-key (kbd \"C-z\") popwin:keymap\)
@@ -974,17 +967,15 @@ Keymap:
 
 | Key    | Command                    |
 |--------+----------------------------|
-| b, C-b | popwin:popup-buffer        |
-| M-b    | popwin:popup-buffer-tail   |
-| o, C-o | popwin:display-buffer      |
-| p, C-p | popwin:display-last-buffer |
-| f, C-f | popwin:find-file           |
-| M-f    | popwin:find-file-tail      |
-| s, C-s | popwin:select-popup-window |
-| M-s    | popwin:stick-popup-window  |
+| b      | popwin:popup-buffer        |
+| C-o    | popwin:display-buffer      |
+| l      | popwin:display-last-buffer |
+| o      | popwin:select-popup-window |
+| s      | popwin:stick-popup-window  |
 | 0      | popwin:close-popup-window  |
-| m, C-m | popwin:messages            |
-| u, C-u | popwin:universal-display   |
+| f, C-f | popwin:find-file           |
+| e      | popwin:messages            |
+| C-u    | popwin:universal-display   |
 | 1      | popwin:one-window          |")
 
 (provide 'popwin)
