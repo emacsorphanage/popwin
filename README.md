@@ -92,8 +92,9 @@ Keymap:
     |--------+-------------------------------------|
     | b      | popwin:popup-buffer                 |
     | l      | popwin:popup-last-buffer            |
-    | C-o    | popwin:display-buffer               |
-    | C-l    | popwin:original-display-last-buffer |
+    | o      | popwin:display-buffer               |
+    | C-p    | popwin:original-pop-to-last-buffer  |
+    | C-o    | popwin:original-display-last-buffer |
     | o      | popwin:select-popup-window          |
     | s      | popwin:stick-popup-window           |
     | 0      | popwin:close-popup-window           |

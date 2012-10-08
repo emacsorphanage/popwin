@@ -751,8 +751,8 @@ buffers will be shown at the left of the frame with width 80."
                  (default-value symbol)))
   :group 'popwin)
 
-(defun popwin:original-display-buffer (buffer &optional not-this-window)
-  "Call `display-buffer' for BUFFER without special displaying."
+(defun popwin:apply-display-buffer (function buffer &optional not-this-window)
+  "Call FUNCTION on BUFFER without special displaying."
   (popwin:without-special-displaying
    (let ((same-window
           (or (same-window-p (buffer-name buffer))
@@ -773,8 +773,16 @@ buffers will be shown at the left of the frame with width 80."
        ;; 
        ;; TODO use display-buffer-alist instead of
        ;; display-buffer-function.
-       (display-buffer buffer action frame)
-     (display-buffer buffer not-this-window))))
+       (funcall function buffer action frame)
+     (funcall function buffer not-this-window))))
+
+(defun popwin:original-display-buffer (buffer &optional not-this-window)
+  "Call `display-buffer' on BUFFER without special displaying."
+  (popwin:apply-display-buffer 'display-buffer buffer not-this-window))
+
+(defun popwin:original-pop-to-buffer (buffer &optional not-this-window)
+  "Call `pop-to-buffer' on BUFFER without special displaying."
+  (popwin:apply-display-buffer 'pop-to-buffer buffer not-this-window))
 
 (defun popwin:original-display-last-buffer ()
   "Call `display-buffer' for the last popup buffer without
@@ -782,6 +790,14 @@ special displaying."
   (interactive)
   (if popwin:popup-last-config
       (popwin:original-display-buffer (car popwin:popup-last-config))
+    (error "No popup buffer ever")))
+
+(defun popwin:original-pop-to-last-buffer ()
+  "Call `pop-to-buffer' for the last popup buffer without
+special displaying."
+  (interactive)
+  (if popwin:popup-last-config
+      (popwin:original-pop-to-buffer (car popwin:popup-last-config))
     (error "No popup buffer ever")))
 
 (defun* popwin:display-buffer-1 (buffer-or-name
@@ -959,9 +975,10 @@ original window configuration."
   (let ((map (make-sparse-keymap)))
     (define-key map "b"    'popwin:popup-buffer)
     (define-key map "l"    'popwin:popup-last-buffer)
-    (define-key map "\C-o" 'popwin:display-buffer)
-    (define-key map "\C-l" 'popwin:original-display-last-buffer)
-    (define-key map "o"    'popwin:select-popup-window)
+    (define-key map "o"    'popwin:display-buffer)
+    (define-key map "\C-p" 'popwin:original-pop-to-last-buffer)
+    (define-key map "\C-o" 'popwin:original-display-last-buffer)
+    (define-key map " "    'popwin:select-popup-window)
     (define-key map "s"    'popwin:stick-popup-window)
     (define-key map "0"    'popwin:close-popup-window)
     (define-key map "f"    'popwin:find-file)
@@ -980,9 +997,10 @@ Keymap:
 |--------+-------------------------------------|
 | b      | popwin:popup-buffer                 |
 | l      | popwin:popup-last-buffer            |
-| C-o    | popwin:display-buffer               |
-| C-l    | popwin:original-display-last-buffer |
-| o      | popwin:select-popup-window          |
+| o      | popwin:display-buffer               |
+| C-p    | popwin:original-pop-to-last-buffer  |
+| C-o    | popwin:original-display-last-buffer |
+| SPC    | popwin:select-popup-window          |
 | s      | popwin:stick-popup-window           |
 | 0      | popwin:close-popup-window           |
 | f, C-f | popwin:find-file                    |
