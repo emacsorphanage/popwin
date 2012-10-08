@@ -91,8 +91,8 @@ Keymap:
     | Key    | Command                    |
     |--------+----------------------------|
     | b      | popwin:popup-buffer        |
+    | l      | popwin:popup-last-buffer   |
     | C-o    | popwin:display-buffer      |
-    | l      | popwin:display-last-buffer |
     | o      | popwin:select-popup-window |
     | s      | popwin:stick-popup-window  |
     | 0      | popwin:close-popup-window  |

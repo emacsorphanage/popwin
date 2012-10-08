@@ -356,6 +356,9 @@ frame when a popup window is shown."
 (defvar popwin:popup-buffer nil
   "Buffer of currently shown in the popup window.")
 
+(defvar popwin:popup-last-config nil
+  "Arguments to `popwin:popup-buffer' of last call.")
+
 ;; Deprecated
 (defvar popwin:master-window nil
   "Master window of a popup window.")
@@ -604,6 +607,10 @@ BUFFER."
           (set-window-point popwin:popup-window (point-max))
           (recenter -2)))
       (setq popwin:popup-buffer buffer
+            popwin:popup-last-config (list buffer
+                                           :width width :height height :position position
+                                           :noselect noselect :dedicated dedicated
+                                           :stick stick :tail tail)
             popwin:popup-window-dedicated-p dedicated
             popwin:popup-window-stuck-p stick)))
   (if noselect
@@ -612,6 +619,14 @@ BUFFER."
     (select-window popwin:popup-window))
   (run-hooks 'popwin:after-popup-hook)
   popwin:popup-window)
+
+(defun popwin:popup-last-buffer ()
+  "Show the last popup buffer with the same configuration."
+  (interactive)
+  (if popwin:popup-last-config
+      (apply 'popwin:popup-buffer popwin:popup-last-config)
+    (error "No popup buffer ever")))
+(defalias 'popwin:display-last-buffer 'popwin:popup-last-buffer)
 
 (defun popwin:select-popup-window ()
   "Select the currently shown popup window."
@@ -736,9 +751,6 @@ buffers will be shown at the left of the frame with width 80."
                  (default-value symbol)))
   :group 'popwin)
 
-(defvar popwin:last-display-buffer nil
-  "The lastly displayed buffer.")
-
 (defun popwin:original-display-buffer (buffer &optional not-this-window)
   "Call `display-buffer' for BUFFER without special displaying."
   (popwin:without-special-displaying
@@ -818,7 +830,6 @@ specifies default values of the config."
         finally return
         (if (not found)
             (funcall if-config-not-found buffer)
-          (setq popwin:last-display-buffer buffer)
           (popwin:popup-buffer buffer
                                :width win-width
                                :height win-height
@@ -845,15 +856,6 @@ usual. This function can be used as a value of
 (defun popwin:special-display-popup-window (buffer &rest ignore)
   "Obsolete."
   (popwin:display-buffer-1 buffer))
-
-;;;###autoload
-(defun popwin:display-last-buffer ()
-  "Display the lastly shown buffer by `popwin:display-buffer' and
-`popwin:special-display-popup-window'."
-  (interactive)
-  (if (bufferp popwin:last-display-buffer)
-      (popwin:display-buffer-1 popwin:last-display-buffer)
-    (error "No popup window displayed")))
 
 (defun* popwin:pop-to-buffer-1 (buffer
                                 &key
@@ -948,8 +950,8 @@ original window configuration."
 (defvar popwin:keymap
   (let ((map (make-sparse-keymap)))
     (define-key map "b"    'popwin:popup-buffer)
+    (define-key map "l"    'popwin:popup-last-buffer)
     (define-key map "\C-o" 'popwin:display-buffer)
-    (define-key map "l"    'popwin:display-last-buffer)
     (define-key map "o"    'popwin:select-popup-window)
     (define-key map "s"    'popwin:stick-popup-window)
     (define-key map "0"    'popwin:close-popup-window)
@@ -968,8 +970,8 @@ Keymap:
 | Key    | Command                    |
 |--------+----------------------------|
 | b      | popwin:popup-buffer        |
+| l      | popwin:popup-last-buffer |
 | C-o    | popwin:display-buffer      |
-| l      | popwin:display-last-buffer |
 | o      | popwin:select-popup-window |
 | s      | popwin:stick-popup-window  |
 | 0      | popwin:close-popup-window  |

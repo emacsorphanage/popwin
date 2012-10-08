@@ -258,12 +258,12 @@
   (popwin-test:common
     (let ((popwin:special-display-config '(("*buf1*"))))
       (popwin:display-buffer buf1))
-    (should (eq popwin:last-display-buffer buf1))
+    (should (eq (car popwin:popup-last-config) buf1))
     (popwin:close-popup-window)
     (switch-to-buffer buf2)
     (should-not (popwin-test:front-buffer-p buf1))
     (should-not (eq (length (window-list)) 2))
-    (popwin:display-last-buffer)
+    (popwin:popup-last-buffer)
     (should (popwin-test:front-buffer-p buf1))
     (should (eq (length (window-list)) 2))))
 
