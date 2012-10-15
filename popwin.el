@@ -522,6 +522,7 @@ the popup window will be closed are followings:
             (popwin:buried-buffer-p popwin:popup-buffer))
            (popup-buffer-changed-despite-of-dedicated
             (and popwin:popup-window-dedicated-p
+                 (not popwin:popup-window-stuck-p)
                  (or (not other-window-selected)
                      (not reading-from-minibuf))
                  (buffer-live-p window-buffer)
@@ -640,7 +641,9 @@ BUFFER."
 be closed by `popwin:close-popup-window'."
   (interactive)
   (if (popwin:popup-window-live-p)
-      (setq popwin:popup-window-stuck-p t)
+      (progn
+        (setq popwin:popup-window-stuck-p t)
+        (message "Popup window stuck"))
     (error "No popup window displayed")))
 
 

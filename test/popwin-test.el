@@ -92,6 +92,14 @@
     (should (eq (length (window-list)) 2))
     (should (popwin-test:front-buffer-p buf2))))
 
+(ert-deftest dedicated-stick ()
+  (popwin-test:common
+    (popwin:popup-buffer buf2 :dedicated t :stick t)
+    (other-window 1)
+    (popwin:close-popup-window-if-necessary)
+    (should (eq (length (window-list)) 2))
+    (should (popwin-test:front-buffer-p buf2))))
+
 (ert-deftest popup ()
   (popwin-test:common
     (should-not (eq (length (window-list)) 2))
