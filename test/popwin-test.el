@@ -431,6 +431,23 @@
    (should (null popwin:popup-buffer))
    (should (eq (current-buffer) buf2))))
 
+(ert-deftest popup-from-minibuffer ()
+  (popwin-test:common
+   (popwin-test:store-minibuffer-input "i TAB gnore C-g")
+   (let (succeed)
+     (let ((debug-on-quit t)
+           (debugger
+            (lambda (&rest args)
+              (if (and (eq (car-safe args) 'error)
+                       (eq (car-safe (car-safe (cdr-safe args)))
+                           'quit))
+                  ;; Succeed if ARGS is like (error (quit)).
+                  (setq succeed t)
+                ;; Give up.
+                (abort-recursive-edit)))))
+       (call-interactively 'execute-extended-command))
+     (should succeed))))
+
 ;; test-case M-x occur and M-x next-error
 ;; test-case M-x dired and o
 ;; test-case fixed size popwin
