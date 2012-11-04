@@ -431,9 +431,11 @@
    (should (null popwin:popup-buffer))
    (should (eq (current-buffer) buf2))))
 
+(defun do-nothing () (interactive))
+
 (ert-deftest popup-from-minibuffer ()
   (popwin-test:common
-   (popwin-test:store-minibuffer-input "i TAB gnore C-g")
+   (popwin-test:store-minibuffer-input "do TAB -nothing C-g")
    (let (succeed)
      (let ((debug-on-quit t)
            (debugger
