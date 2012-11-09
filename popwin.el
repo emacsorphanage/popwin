@@ -342,6 +342,12 @@ of the value and frame-size."
   :type 'number
   :group 'popwin)
 
+(defcustom popwin:reuse-window 'current-frame
+  "Non-nil means `popwin:display-buffer' will not popup the
+visible buffer.  The value is same as a second argument of
+`get-buffer-window'."
+  :group 'popwin)
+
 (defcustom popwin:adjust-other-windows t
   "Non-nil means all of other windows will be adjusted to fit the
 frame when a popup window is shown."
@@ -882,12 +888,17 @@ specifies default values of the config."
 usual. This function can be used as a value of
 `display-buffer-function'."
   (interactive "BDisplay buffer:\n")
-  (popwin:display-buffer-1
-   buffer-or-name
-   :if-config-not-found
-   (unless (called-interactively-p)
-     (lambda (buffer)
-       (popwin:original-display-buffer buffer not-this-window)))))
+  (if (and popwin:reuse-window
+           (not (memq (get-buffer-window buffer-or-name popwin:reuse-window)
+                      (list (if not-this-window (selected-window)) nil))))
+      ;; Call `display-buffer' for reuse.
+      (popwin:original-display-buffer buffer-or-name not-this-window)
+    (popwin:display-buffer-1
+     buffer-or-name
+     :if-config-not-found
+     (unless (called-interactively-p)
+       (lambda (buffer)
+         (popwin:original-display-buffer buffer not-this-window))))))
 
 (defun popwin:special-display-popup-window (buffer &rest ignore)
   "Obsolete."
