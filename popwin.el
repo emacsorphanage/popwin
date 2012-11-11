@@ -627,11 +627,15 @@ BUFFER."
   (run-hooks 'popwin:after-popup-hook)
   popwin:popup-window)
 
-(defun popwin:popup-last-buffer ()
-  "Show the last popup buffer with the same configuration."
-  (interactive)
+(defun popwin:popup-last-buffer (&optional noselect)
+  "Show the last popup buffer with the same configuration. If
+NOSELECT is non-nil, the popup window will not be selected."
+  (interactive "P")
   (if popwin:popup-last-config
-      (apply 'popwin:popup-buffer popwin:popup-last-config)
+      (if noselect
+          (destructuring-bind (buffer . keyargs) popwin:popup-last-config
+            (apply 'popwin:popup-buffer buffer :noselect t keyargs))
+        (apply 'popwin:popup-buffer popwin:popup-last-config))
     (error "No popup buffer ever")))
 (defalias 'popwin:display-last-buffer 'popwin:popup-last-buffer)
 
