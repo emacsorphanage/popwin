@@ -900,7 +900,9 @@ usual. This function can be used as a value of
     (popwin:display-buffer-1
      buffer-or-name
      :if-config-not-found
-     (unless (called-interactively-p)
+     (unless (with-no-warnings
+               ;; FIXME: emacs bug?
+               (called-interactively-p))
        (lambda (buffer)
          (popwin:original-display-buffer buffer not-this-window))))))
 
