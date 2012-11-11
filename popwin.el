@@ -4,7 +4,7 @@
 
 ;; Author: Tomohiro Matsuyama <tomo@cx4a.org>
 ;; Keywords: convenience
-;; Version: 0.6alpha
+;; Version: 0.6
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@
 
 (eval-when-compile (require 'cl))
 
-(defconst popwin:version "0.6alpha")
+(defconst popwin:version "0.6")
 
 
 
