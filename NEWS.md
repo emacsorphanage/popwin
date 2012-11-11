@@ -12,13 +12,15 @@ New Commands
 
 - `popwin:switch-to-last-buffer`
 - `popwin:popup-last-buffer`
+- `popwin:original-display-last-buffer`
+- `popwin:original-pop-to-last-buffer`
 
 New Variables
 -------------
 
 - `popwin:reuse-window`
 
-Contributers
+Contributors
 ------------
 
 - ARISAWA Yuuki added a lot of test cases (test/popwin-test.el)
