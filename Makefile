@@ -9,16 +9,16 @@ compile: popwin.el
 clean:
 	rm -f popwin.elc
 
-test:
+test: compile
 	$(EMACS) -Q -L . -l test/popwin-test.el
 
-test-nw:
+test-nw: compile
 	$(EMACS) -Q -nw -L . -l test/popwin-test.el
 
-test-emacs23: test/ert.el
+test-emacs23: compile test/ert.el
 	$(EMACS23) -Q -L . -l test/ert.el -l test/popwin-test.el
 
-test-emacs23-nw: test/ert.el
+test-emacs23-nw: compile test/ert.el
 	$(EMACS23) -Q -nw -L . -l test/ert.el -l test/popwin-test.el
 
 test/ert.el:
