@@ -487,6 +487,9 @@ window will not be selected."
           (when (popwin:window-deletable-p popwin:popup-window)
             (delete-window popwin:popup-window))
           (popwin:restore-window-outline (car (window-tree)) popwin:window-outline)
+          ;; Call `redisplay' here so `window-start' could be set
+          ;; prior to the point change of the master buffer.
+          (redisplay)
           (when (and (not keep-selected)
                      (window-live-p popwin:selected-window))
             (select-window popwin:selected-window)))
