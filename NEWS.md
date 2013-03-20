@@ -1,3 +1,16 @@
+v0.6.2
+======
+
+Highlight
+---------
+
+- GNU Emacs 24.3 support
+
+Fixed Bugs
+----------
+
+- Zombie timers
+
 v0.6.1
 ======
 
