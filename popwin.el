@@ -396,7 +396,7 @@ popup buffer.")
 (defvar popwin:close-popup-window-timer nil
   "Timer of closing the popup window.")
 
-(defvar popwin:close-popup-window-timer-interval 0.01
+(defvar popwin:close-popup-window-timer-interval 0.05
   "Interval of `popwin:close-popup-window-timer'.")
 
 (defvar popwin:before-popup-hook nil)
