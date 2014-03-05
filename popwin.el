@@ -185,7 +185,8 @@ HFACTOR, and vertical factor VFACTOR."
             (popwin:window-point node)
             (window-start node)
             (window-edges node)
-            (eq (selected-window) node))
+            (eq (selected-window) node)
+            (window-dedicated-p node))
     (destructuring-bind (dir edges . windows) node
       (append (list dir edges)
               (mapcar 'popwin:window-config-tree-1 windows)))))
@@ -203,14 +204,17 @@ horizontal factor HFACTOR, and vertical factor VFACTOR. The
 return value is a association list of mapping from old-window to
 new-window."
   (if (eq (car node) 'window)
-      (destructuring-bind (old-win buffer point start edges selected)
+      (destructuring-bind (old-win buffer point start edges selected dedicated)
           (cdr node)
+        (set-window-dedicated-p window nil)
         (popwin:adjust-window-edges window edges hfactor vfactor)
         (with-selected-window window
           (popwin:switch-to-buffer buffer t))
         (when selected
           (select-window window))
         (set-window-point window point)
+        (when dedicated
+          (set-window-dedicated-p window t))
         `((,old-win . ,window)))
     (destructuring-bind (dir edges . windows) node
       (loop while windows
@@ -227,7 +231,7 @@ which is a node of `window-tree' and OUTLINE which is a node of
    ((and (windowp node)
          (eq (car outline) 'window))
     ;; same window
-    (destructuring-bind (old-win buffer point start edges selected)
+    (destructuring-bind (old-win buffer point start edges selected dedicated)
         (cdr outline)
       (popwin:adjust-window-edges node edges)
       (when (and (eq (window-buffer node) buffer)
