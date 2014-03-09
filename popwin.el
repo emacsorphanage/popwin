@@ -346,10 +346,10 @@ of the value and frame-size."
   :type 'number
   :group 'popwin)
 
-(defcustom popwin:reuse-window 'current-frame
+(defcustom popwin:reuse-window 'current
   "Non-nil means `popwin:display-buffer' will not popup the
 visible buffer.  The value is same as a second argument of
-`get-buffer-window'."
+`get-buffer-window', except `current' means the selected frame."
   :group 'popwin)
 
 (defcustom popwin:adjust-other-windows t
@@ -837,6 +837,17 @@ special displaying."
       (popwin:original-pop-to-buffer (car popwin:popup-last-config))
     (error "No popup buffer ever")))
 
+(defun popwin:reuse-window-p (buffer-or-name not-this-window)
+  "Return t if a window showing BUFFER-OR-NAME exists and should
+be used displaying the buffer."
+  (and popwin:reuse-window
+       (let ((window (get-buffer-window buffer-or-name
+                                        (if (eq popwin:reuse-window 'current)
+                                            nil
+                                          popwin:reuse-window))))
+         (and (not (null window))
+              (not (eq window (if not-this-window (selected-window))))))))
+
 (defun* popwin:match-config (buffer)
   (when (stringp buffer) (setq buffer (get-buffer buffer)))
   (loop with name = (buffer-name buffer)
@@ -893,9 +904,7 @@ specifies default values of the config."
 usual. This function can be used as a value of
 `display-buffer-function'."
   (interactive "BDisplay buffer:\n")
-  (if (and popwin:reuse-window
-           (not (memq (get-buffer-window buffer-or-name popwin:reuse-window)
-                      (list (if not-this-window (selected-window)) nil))))
+  (if (popwin:reuse-window-p buffer-or-name not-this-window)
       ;; Call `display-buffer' for reuse.
       (popwin:original-display-buffer buffer-or-name not-this-window)
     (popwin:display-buffer-1
