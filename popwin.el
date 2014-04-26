@@ -682,6 +682,7 @@ be closed by `popwin:close-popup-window'."
 
 (defcustom popwin:special-display-config
   '(;; Emacs
+    ("*Miniedit Help*" :noselect t)
     help-mode
     (completion-list-mode :noselect t)
     (compilation-mode :noselect t)
