@@ -213,7 +213,7 @@ new-window."
         (when selected
           (select-window window))
         (set-window-point window point)
-        (set-window-start window start)
+        (set-window-start window start t)
         (when dedicated
           (set-window-dedicated-p window t))
         `((,old-win . ,window)))
