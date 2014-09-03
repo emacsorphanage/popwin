@@ -465,9 +465,9 @@ popup buffer.")
 (defun popwin:start-close-popup-window-timer ()
   (or popwin:close-popup-window-timer
       (setq popwin:close-popup-window-timer
-            (run-with-timer popwin:close-popup-window-timer-interval
-                            popwin:close-popup-window-timer-interval
-                            'popwin:close-popup-window-timer))))
+            (run-with-idle-timer popwin:close-popup-window-timer-interval
+                                 popwin:close-popup-window-timer-interval
+                                 'popwin:close-popup-window-timer))))
 
 (defun popwin:stop-close-popup-window-timer ()
   (when popwin:close-popup-window-timer
