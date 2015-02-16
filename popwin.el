@@ -271,7 +271,7 @@ which is a node of `window-tree' and OUTLINE which is a node of
 (defun popwin:create-popup-window-1 (window size position)
   "Create a new window with SIZE at POSITION of WINDOW. The
 return value is a list of a master window and the popup window."
-  (let ((width (window-width window))
+  (let ((width (window-total-width window))
         (height (window-height window)))
     (ecase position
       ((left :left)
@@ -304,7 +304,7 @@ window-configuration."
          (vfactor 1))
     (popwin:save-selected-window
      (delete-other-windows root-win))
-    (let ((root-width (window-width root-win))
+    (let ((root-width (window-total-width root-win))
           (root-height (window-height root-win)))
       (when adjust
         (if (floatp size)
