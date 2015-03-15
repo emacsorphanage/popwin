@@ -1,8 +1,8 @@
 ;;; popwin.el --- Popup Window Manager.
 
-;; Copyright (C) 2011, 2012, 2013, 2014  Tomohiro Matsuyama
+;; Copyright (C) 2011-2015  Tomohiro Matsuyama
 
-;; Author: Tomohiro Matsuyama <tomo@cx4a.org>
+;; Author: Tomohiro Matsuyama <m2ym.pub@gmail.com>
 ;; Keywords: convenience
 ;; Version: 0.7.0alpha
 
