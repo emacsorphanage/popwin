@@ -147,6 +147,13 @@ minibuffer window is selected."
 
 (defvar popwin:dummy-buffer nil)
 
+(defun popwin:window-total-width (&optional win)
+  "Return a window's text plus margin width.
+WIN defaults to the selected window."
+  (+ (window-width win)
+     (or (car (window-margins win)) 0)
+     (or (cdr (window-margins win)) 0)))
+
 (defun popwin:dummy-buffer ()
   (if (buffer-live-p popwin:dummy-buffer)
       popwin:dummy-buffer
@@ -271,7 +278,7 @@ which is a node of `window-tree' and OUTLINE which is a node of
 (defun popwin:create-popup-window-1 (window size position)
   "Create a new window with SIZE at POSITION of WINDOW. The
 return value is a list of a master window and the popup window."
-  (let ((width (window-width window))
+  (let ((width (popwin:window-total-width window))
         (height (window-height window)))
     (ecase position
       ((left :left)
@@ -304,7 +311,7 @@ window-configuration."
          (vfactor 1))
     (popwin:save-selected-window
      (delete-other-windows root-win))
-    (let ((root-width (window-width root-win))
+    (let ((root-width (popwin:window-total-width root-win))
           (root-height (window-height root-win)))
       (when adjust
         (if (floatp size)
