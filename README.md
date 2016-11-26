@@ -88,21 +88,19 @@ like:
 
 Keymap:
 
-    | Key    | Command                               |
-    |--------+---------------------------------------|
-    | b      | popwin:popup-buffer                   |
-    | l      | popwin:popup-last-buffer              |
-    | o      | popwin:display-buffer                 |
-    | C-b    | popwin:switch-to-last-buffer          |
-    | C-p    | popwin:original-pop-to-last-buffer    |
-    | C-o    | popwin:original-display-last-buffer   |
-    | SPC    | popwin:select-popup-window            |
-    | s      | popwin:stick-popup-window             |
-    | 0      | popwin:close-popup-window             |
-    | f, C-f | popwin:find-file                      |
-    | e      | popwin:messages                       |
-    | C-u    | popwin:universal-display              |
-    | 1      | popwin:one-window                     |
+    | Key    | Command                    |
+    |--------+----------------------------|
+    | b, C-b | popwin:popup-buffer        |
+    | o, C-o | popwin:display-buffer      |
+    | p, C-p | popwin:display-last-buffer |
+    | s, C-s | popwin:select-popup-window |
+    | M-s    | popwin:stick-popup-window  |
+    | 0      | popwin:close-popup-window  |
+    | f, C-f | popwin:find-file           |
+    | RET    | popwin:messages            |
+    | M-b    | popwin:popup-buffer-tail   |
+    | M-f    | popwin:find-file-tail      |
+
 
 Special Display Config
 ----------------------
