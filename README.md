@@ -19,13 +19,9 @@ be shown as a popup window, and you can close them smoothly by typing
 
 ## Screenshots
 
-**Before Popup Window**
-
-![](https://raw.githubusercontent.com/m2ym/popwin-el/master/etc/images/popwin1.png)
-
-**After Popup Window**
-
-![](https://raw.githubusercontent.com/m2ym/popwin-el/master/etc/images/popwin2.png)
+| Before Popup Window | After Popup Window |
+|:---------------------------------------------:|:--------------------------------------------------------:|
+|![](https://raw.githubusercontent.com/m2ym/popwin-el/master/etc/images/popwin1.png)|![](https://raw.githubusercontent.com/m2ym/popwin-el/master/etc/images/popwin2.png)|
 
 ## Installation
 
