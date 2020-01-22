@@ -1,3 +1,7 @@
+[![MELPA](https://melpa.org/packages/popwin-badge.svg)](https://melpa.org/#/popwin)
+[![MELPA Stable](https://stable.melpa.org/packages/popwin-badge.svg)](https://stable.melpa.org/#/popwin)
+
+
 # popwin.el
 
 popwin is a popup window manager for Emacs which makes you free from
