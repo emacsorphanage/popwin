@@ -1051,6 +1051,7 @@ original window configuration."
   (let ((not-this-window (plist-get 'inhibit-same-window alist)))
     (popwin:display-buffer buffer not-this-window)))
 
+;;;###autoload
 (define-minor-mode popwin-mode
   ""
   :init-value nil
