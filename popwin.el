@@ -836,7 +836,7 @@ buffers will be shown at the left of the frame with width 80."
        ;; Use variables ACTION and FRAME which are formal parameters
        ;; of DISPLAY-BUFFER.
        ;;
-       ;; TODO use display-buffer-alist instead of
+       ;; TODO: use display-buffer-alist instead of
        ;; display-buffer-function.
        (funcall function buffer action frame)
      (funcall function buffer not-this-window))))
@@ -983,6 +983,7 @@ OTHER-WINDOW amd NORECORD are the same arguments."
 (defcustom popwin:universal-display-config '(t)
   "Same as `popwin:special-display-config' except that this will \
 be used for `popwin:universal-display'."
+  :type 'list
   :group 'popwin)
 
 ;;;###autoload
