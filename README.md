@@ -1,8 +1,4 @@
-popwin.el
-=========
-
-Overview
---------
+# popwin.el
 
 popwin is a popup window manager for Emacs which makes you free from
 the hell of annoying buffers such like `*Help*`, `*Completions*`,
@@ -17,8 +13,7 @@ popwin resolves there problems. Windows of such temporary buffers will
 be shown as a popup window, and you can close them smoothly by typing
 `C-g` in anytime.
 
-Screenshots
------------
+## Screenshots
 
 **Before Popup Window**
 
@@ -28,8 +23,7 @@ Screenshots
 
 ![](https://raw.githubusercontent.com/m2ym/popwin-el/master/etc/images/popwin2.png)
 
-Installation
-------------
+## Installation
 
 Install `popwin.el` into your `load-path` directory. If you have
 `install-elisp` or `auto-install`, you may install `popwin.el` like:
@@ -46,8 +40,7 @@ And then add the following code into your `.emacs`:
 
 popwin is tested under GNU Emacs 22 or later.
 
-Basic Usage
------------
+## Basic Usage
 
 Special buffers, for example `*Help*`, specified in
 `popwin:special-display-config` will be shown in a popup window. You
@@ -71,8 +64,7 @@ Let me show other examples.
 
 ![](https://raw.githubusercontent.com/m2ym/popwin-el/master/etc/images/popwin-compile.png)
 
-Customization
--------------
+## Customization
 
 Please do `M-x customize-group RET popwin RET` and `M-x
 customize-variable RET popwin:special-display-config RET`. See the
@@ -104,8 +96,7 @@ Keymap:
     | C-u    | popwin:universal-display              |
     | 1      | popwin:one-window                     |
 
-Special Display Config
-----------------------
+## Special Display Config
 
 `popwin:special-display-config` is a list of `CONFIG`. `CONFIG` may be
 a form of `(PATTERN . KEYWORDS)`, where `PATTERN` is a pattern of
@@ -185,8 +176,7 @@ empty. Available keywords are following:
     ;; undo-tree
     (push '(" *undo-tree*" :width 0.3 :position right) popwin:special-display-config)
 
-Universal Display Config
-------------------------
+## Universal Display Config
 
 `popwin:universal-display-config` is a special alternative value of
 `popwin:special-display-config`, which will be used when executing a
@@ -198,8 +188,7 @@ RET`.
 The default value is `(t)`, meaning all of buffers with `M-x
 popwin:universal-display` prefix will be shown in a popup window.
 
-Working with Other Extensions
------------------------------
+## Working with Other Extensions
 
 Some extensions needs workaround for working with popwin.
 
@@ -274,8 +263,7 @@ window.
 Do not load `windows.el` after loading `popwin.el`. Load `windows.el`
 first.
 
-Basic Commands
---------------
+## Basic Commands
 
 ### Command: `popwin:popup-buffer`
 
@@ -311,8 +299,7 @@ window in full window temporarily.
 
 Show `*Messages*` buffer in a popup window.
 
-Basic API
----------
+## Basic API
 
 ### Function: `popwin:create-popup-window`
 
