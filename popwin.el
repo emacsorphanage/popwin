@@ -363,6 +363,7 @@ be a multiplier of the value and frame-size."
   "Non-nil means `popwin:display-buffer' will not popup the visible buffer.
 The value is same as a second argument of `get-buffer-window', except `current'
 means the selected frame."
+  :type 'symbol
   :group 'popwin)
 
 (defcustom popwin:adjust-other-windows t
