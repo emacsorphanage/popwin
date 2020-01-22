@@ -29,6 +29,13 @@ be shown as a popup window, and you can close them smoothly by typing
 
 ## Installation
 
+### Melpa
+
+This package is on [MELPA](https://github.com/melpa/melpa), you can install it from
+there! (recommended)
+
+### Manually
+
 Install `popwin.el` into your `load-path` directory. If you have
 `install-elisp` or `auto-install`, you may install `popwin.el` like:
 
@@ -153,16 +160,16 @@ empty. Available keywords are following:
     ;; M-x anything
     (setq anything-samewindow nil)
     (push '("*anything*" :height 20) popwin:special-display-config)
-    
+
     ;; M-x dired-jump-other-window
     (push '(dired-mode :position top) popwin:special-display-config)
-    
+
     ;; M-!
     (push "*Shell Command Output*" popwin:special-display-config)
-    
+
     ;; M-x compile
     (push '(compilation-mode :noselect t) popwin:special-display-config)
-    
+
     ;; slime
     (push "*slime-apropos*" popwin:special-display-config)
     (push "*slime-macroexpansion*" popwin:special-display-config)
@@ -172,11 +179,11 @@ empty. Available keywords are following:
     (push '(sldb-mode :stick t) popwin:special-display-config)
     (push 'slime-repl-mode popwin:special-display-config)
     (push 'slime-connection-list-mode popwin:special-display-config)
-    
+
     ;; vc
     (push "*vc-diff*" popwin:special-display-config)
     (push "*vc-change-log*" popwin:special-display-config)
-    
+
     ;; undo-tree
     (push '(" *undo-tree*" :width 0.3 :position right) popwin:special-display-config)
 
