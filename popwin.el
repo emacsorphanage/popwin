@@ -59,7 +59,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(eval-when-compile (require 'cl-lib))
 
 (defconst popwin:version "1.0.0")
 
@@ -85,7 +85,7 @@ such a buffer named BUFFER-OR-NAME not found, a new buffer will
 be returned when IF-NOT-FOUND is :create, or an error reported
 when IF-NOT-FOUND is :error.  The default of value of IF-NOT-FOUND
 is :error."
-  (ecase (or if-not-found :error)
+  (cl-ecase (or if-not-found :error)
     (:create
      (get-buffer-create buffer-or-name))
     (:error
@@ -167,16 +167,16 @@ minibuffer window is selected."
          (not (eq (window-buffer next-window)
                   (popwin:dummy-buffer))))))
 
-(defun* popwin:adjust-window-edges (window
-                                    edges
-                                    &optional
-                                    (hfactor 1)
-                                    (vfactor 1))
+(cl-defun popwin:adjust-window-edges (window
+                                      edges
+                                      &optional
+                                      (hfactor 1)
+                                      (vfactor 1))
   "Adjust edges of WINDOW to EDGES accoring to horizontal factor
 HFACTOR, and vertical factor VFACTOR."
   (when (popwin:window-trailing-edge-adjustable-p window)
-    (destructuring-bind ((left top right bottom)
-                         (cur-left cur-top cur-right cur-bottom))
+    (cl-destructuring-bind ((left top right bottom)
+                            (cur-left cur-top cur-right cur-bottom))
         (list edges (window-edges window))
       (let ((hdelta (floor (- (* (- right left) hfactor) (- cur-right cur-left))))
             (vdelta (floor (- (* (- bottom top) vfactor) (- cur-bottom cur-top)))))
@@ -196,9 +196,9 @@ HFACTOR, and vertical factor VFACTOR."
             (window-edges node)
             (eq (selected-window) node)
             (window-dedicated-p node))
-    (destructuring-bind (dir edges . windows) node
+    (cl-destructuring-bind (dir edges . windows) node
       (append (list dir edges)
-              (loop for window in windows
+              (cl-loop for window in windows
                     unless (and (windowp window)
                                 (window-parameter window 'window-side))
                     collect (popwin:window-config-tree-1 window))))))
@@ -206,7 +206,7 @@ HFACTOR, and vertical factor VFACTOR."
 (defun popwin:window-config-tree ()
   "Return `window-tree' with replacing window values in the tree \
 with persistent representations."
-  (destructuring-bind (root mini)
+  (cl-destructuring-bind (root mini)
       (window-tree)
     (list (popwin:window-config-tree-1 root) mini)))
 
@@ -216,7 +216,7 @@ horizontal factor HFACTOR, and vertical factor VFACTOR.  The
 return value is a association list of mapping from old-window to
 new-window."
   (if (eq (car node) 'window)
-      (destructuring-bind (old-win buffer point start edges selected dedicated)
+      (cl-destructuring-bind (old-win buffer point start edges selected dedicated)
           (cdr node)
         (set-window-dedicated-p window nil)
         (popwin:adjust-window-edges window edges hfactor vfactor)
@@ -229,8 +229,8 @@ new-window."
         (when dedicated
           (set-window-dedicated-p window t))
         `((,old-win . ,window)))
-    (destructuring-bind (dir edges . windows) node
-      (loop while windows
+    (cl-destructuring-bind (dir edges . windows) node
+      (cl-loop while windows
             for sub-node = (pop windows)
             for win = window then next-win
             for next-win = (and windows (split-window win nil (not dir)))
@@ -244,7 +244,7 @@ which is a node of `window-tree' and OUTLINE which is a node of
    ((and (windowp node)
          (eq (car outline) 'window))
     ;; same window
-    (destructuring-bind (old-win buffer point start edges selected dedicated)
+    (cl-destructuring-bind (old-win buffer point start edges selected dedicated)
         (cdr outline)
       (popwin:adjust-window-edges node edges)
       (when (and (eq (window-buffer node) buffer)
@@ -260,7 +260,7 @@ which is a node of `window-tree' and OUTLINE which is a node of
           (child-outlines (cddr outline)))
       (when (eq (length child-nodes) (length child-outlines))
         ;; same structure
-        (loop for child-node in child-nodes
+        (cl-loop for child-node in child-nodes
               for child-outline in child-outlines
               do (popwin:restore-window-outline child-node child-outline)))))))
 
@@ -277,7 +277,7 @@ which is a node of `window-tree' and OUTLINE which is a node of
 The return value is a list of a master window and the popup window."
   (let ((width (window-width window))
         (height (window-height window)))
-    (ecase position
+    (cl-ecase position
       ((left :left)
        (list (split-window window size t)
              window))
@@ -291,7 +291,7 @@ The return value is a list of a master window and the popup window."
        (list window
              (split-window window (- height size) nil))))))
 
-(defun* popwin:create-popup-window (&optional (size 15) (position 'bottom) (adjust t))
+(cl-defun popwin:create-popup-window (&optional (size 15) (position 'bottom) (adjust t))
   "Create a popup window with SIZE on the frame.  If SIZE
 is integer, the size of the popup window will be SIZE. If SIZE is
 float, the size of popup window will be a multiplier of SIZE and
@@ -320,7 +320,7 @@ window-configuration."
           (if (popwin:position-horizontal-p position)
               (setq hfactor (/ (float (- root-width size)) root-width))
             (setq vfactor (/ (float (- root-height size)) root-height)))))
-      (destructuring-bind (master-win popup-win)
+      (cl-destructuring-bind (master-win popup-win)
           (popwin:create-popup-window-1 root-win size position)
         ;; Mark popup-win being a popup window.
         (with-selected-window popup-win
@@ -418,25 +418,25 @@ frame when a popup window is shown."
 
 (defvar popwin:after-popup-hook nil)
 
-(symbol-macrolet ((context-vars '(popwin:popup-window
-                                  popwin:popup-buffer
-                                  popwin:master-window
-                                  popwin:focus-window
-                                  popwin:selected-window
-                                  popwin:popup-window-dedicated-p
-                                  popwin:popup-window-stuck-p
-                                  popwin:window-outline
-                                  popwin:window-map)))
+(cl-symbol-macrolet ((context-vars '(popwin:popup-window
+                                     popwin:popup-buffer
+                                     popwin:master-window
+                                     popwin:focus-window
+                                     popwin:selected-window
+                                     popwin:popup-window-dedicated-p
+                                     popwin:popup-window-stuck-p
+                                     popwin:window-outline
+                                     popwin:window-map)))
   (defun popwin:valid-context-p (context)
     (window-live-p (plist-get context 'popwin:popup-window)))
 
   (defun popwin:current-context ()
-    (loop for var in context-vars
+    (cl-loop for var in context-vars
           collect var
           collect (symbol-value var)))
 
   (defun popwin:use-context (context)
-    (loop for var = (pop context)
+    (cl-loop for var = (pop context)
           for val = (pop context)
           while var
           do (set var val)))
@@ -447,8 +447,8 @@ frame when a popup window is shown."
   (defun popwin:pop-context ()
     (popwin:use-context (pop popwin:context-stack)))
 
-  (defun* popwin:find-context-for-buffer (buffer &key valid-only)
-    (loop with stack = popwin:context-stack
+  (cl-defun popwin:find-context-for-buffer (buffer &key valid-only)
+    (cl-loop with stack = popwin:context-stack
           for context = (pop stack)
           while context
           if (and (eq buffer (plist-get context 'popwin:popup-buffer))
@@ -460,7 +460,7 @@ frame when a popup window is shown."
   "Return t if `popwin:popup-window' is alive."
   (window-live-p popwin:popup-window))
 
-(defun* popwin:update-window-reference (symbol
+(cl-defun popwin:update-window-reference (symbol
                                         &key
                                         (map popwin:window-map)
                                         safe
@@ -613,7 +613,7 @@ The all situations where the popup window will be closed are followings:
           (setq last-command 'popwin:close-popup-window))))))
 
 ;;;###autoload
-(defun* popwin:popup-buffer (buffer
+(cl-defun popwin:popup-buffer (buffer
                              &key
                              (width popwin:popup-window-width)
                              (height popwin:popup-window-height)
@@ -633,14 +633,14 @@ BUFFER."
   (setq buffer (get-buffer buffer))
   (popwin:push-context)
   (run-hooks 'popwin:before-popup-hook)
-  (multiple-value-bind (context context-stack)
+  (cl-multiple-value-bind (context context-stack)
       (popwin:find-context-for-buffer buffer :valid-only t)
     (if context
         (progn
           (popwin:use-context context)
           (setq popwin:context-stack context-stack))
       (let ((win-outline (car (popwin:window-config-tree))))
-        (destructuring-bind (master-win popup-win win-map)
+        (cl-destructuring-bind (master-win popup-win win-map)
             (let ((size (if (popwin:position-horizontal-p position) width height))
                   (adjust popwin:adjust-other-windows))
               (popwin:create-popup-window size position adjust))
@@ -677,7 +677,7 @@ If NOSELECT is non-nil, the popup window will not be selected."
   (interactive "P")
   (if popwin:popup-last-config
       (if noselect
-          (destructuring-bind (buffer . keyargs) popwin:popup-last-config
+          (cl-destructuring-bind (buffer . keyargs) popwin:popup-last-config
             (apply 'popwin:popup-buffer buffer :noselect t keyargs))
         (apply 'popwin:popup-buffer popwin:popup-last-config))
     (error "No popup buffer ever")))
@@ -882,9 +882,9 @@ buffers will be shown at the left of the frame with width 80."
          (and (not (null window))
               (not (eq window (if not-this-window (selected-window))))))))
 
-(defun* popwin:match-config (buffer)
+(cl-defun popwin:match-config (buffer)
   (when (stringp buffer) (setq buffer (get-buffer buffer)))
-  (loop with name = (buffer-name buffer)
+  (cl-loop with name = (buffer-name buffer)
         with mode = (buffer-local-value 'major-mode buffer)
         for config in popwin:special-display-config
         for (pattern . keywords) = (popwin:listify config)
@@ -900,7 +900,7 @@ buffers will be shown at the left of the frame with width 80."
                  (t (error "Invalid pattern: %s" pattern)))
         return (cons pattern keywords)))
 
-(defun* popwin:display-buffer-1 (buffer-or-name
+(cl-defun popwin:display-buffer-1 (buffer-or-name
                                  &key
                                  default-config-keywords
                                  (if-buffer-not-found :create)
@@ -918,10 +918,10 @@ specifies default values of the config."
          (pattern-and-keywords (popwin:match-config buffer)))
     (unless pattern-and-keywords
       (if if-config-not-found
-          (return-from popwin:display-buffer-1
+          (cl-return-from popwin:display-buffer-1
             (funcall if-config-not-found buffer))
         (setq pattern-and-keywords '(t))))
-    (destructuring-bind (&key regexp width height position noselect dedicated stick tail)
+    (cl-destructuring-bind (&key regexp width height position noselect dedicated stick tail)
         (append (cdr pattern-and-keywords) default-config-keywords)
       (popwin:popup-buffer buffer
                            :width (or width popwin:popup-window-width)
@@ -954,7 +954,7 @@ This function can be used as a value of
   "Obsolete (BUFFER) (IGNORE)."
   (popwin:display-buffer-1 buffer))
 
-(defun* popwin:pop-to-buffer-1 (buffer
+(cl-defun popwin:pop-to-buffer-1 (buffer
                                 &key
                                 default-config-keywords
                                 other-window
@@ -1013,7 +1013,7 @@ window configuration."
   "Same as `popwin:popup-buffer' except that the buffer will be \
 `recenter'ed at the bottom."
   (interactive "bPopup buffer:\n")
-  (destructuring-bind (buffer . keyargs) same-as-popwin:popup-buffer
+  (cl-destructuring-bind (buffer . keyargs) same-as-popwin:popup-buffer
     (apply 'popwin:popup-buffer buffer :tail t keyargs)))
 
 ;;;###autoload
