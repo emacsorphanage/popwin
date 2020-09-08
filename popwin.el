@@ -1,10 +1,12 @@
-;;; popwin.el --- Popup Window Manager.
+;;; popwin.el --- Popup Window Manager
 
 ;; Copyright (C) 2011-2015  Tomohiro Matsuyama
 
 ;; Author: Tomohiro Matsuyama <m2ym.pub@gmail.com>
 ;; Keywords: convenience
 ;; Version: 1.0.0
+;; URL: https://github.com/emacsorphanage/popwin
+;; Package-Requires: ((emacs "24.3"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
