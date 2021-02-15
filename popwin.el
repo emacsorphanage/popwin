@@ -201,8 +201,9 @@ HFACTOR, and vertical factor VFACTOR."
     (cl-destructuring-bind (dir edges . windows) node
       (append (list dir edges)
               (cl-loop for window in windows
-                       unless (and (windowp window)
-                                   (window-parameter window 'window-side))
+                       unless (or (and (windowp window)
+                                       (window-parameter window 'window-side))
+                                  (not (windowp window)))
                        collect (popwin:window-config-tree-1 window))))))
 
 (defun popwin:window-config-tree ()
