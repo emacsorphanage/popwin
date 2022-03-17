@@ -1,8 +1,9 @@
 [![MELPA](https://melpa.org/packages/popwin-badge.svg)](https://melpa.org/#/popwin)
 [![MELPA Stable](https://stable.melpa.org/packages/popwin-badge.svg)](https://stable.melpa.org/#/popwin)
 
-
 # popwin.el
+
+[![CI](https://github.com/emacsorphanage/popwin/actions/workflows/test.yml/badge.svg)](https://github.com/emacsorphanage/popwin/actions/workflows/test.yml)
 
 popwin is a popup window manager for Emacs which makes you free from
 the hell of annoying buffers such like `*Help*`, `*Completions*`,
