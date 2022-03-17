@@ -1,18 +1,30 @@
-EMACS=emacs
+SHELL := /usr/bin/env bash
 
-.PHONY: byte-compile clean test test-nw
+EMACS ?= emacs
+EASK ?= eask
 
-byte-compile: popwin.el
-	$(EMACS) -Q --batch -f batch-byte-compile popwin.el
+TEST-FILES := $(shell ls test/popwin-*.el)
+
+.PHONY: clean checkdoc lint install compile unix-test
+
+ci: clean install compile
 
 clean:
-	rm -f popwin.elc test/ert.el
+	@echo "Cleaning..."
+	$(EASK) clean-all
 
-test: byte-compile test/ert.el
-	$(EMACS) -Q -l popwin.el -l test/ert.el -l test/popwin-test.el
+install:
+	@echo "Installing..."
+	$(EASK) install
 
-test-nw: byte-compile
-	$(EMACS) -Q -nw -l popwin.el -l test/ert.el -l test/popwin-test.el
+compile:
+	@echo "Compiling..."
+	$(EASK) compile
 
-test/ert.el:
-	wget https://raw.github.com/ohler/ert/c619b56c5bc6a866e33787489545b87d79973205/lisp/emacs-lisp/ert.el -O $@
+lint:
+	@echo "Linting..."
+	$(EASK) lint
+
+unix-test:
+	@echo "Testing..."
+	$(EASK) exec ert-runner -L . $(LOAD-TEST-FILES) -t '!no-win' -t '!org'
