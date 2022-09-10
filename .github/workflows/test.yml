@@ -35,3 +35,26 @@ jobs:
     - name: Run tests
       run:
         make ci
+
+  warnings:
+    name: 'Compile code and check for warnings'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs_version:
+          - 26.1
+          - 26.2
+          - 26.3
+          - 27.1
+          - 27.2
+          - 28.1
+          - snapshot
+    steps:
+      - name: 'Install Emacs'
+        uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs_version }}
+      - name: 'Checkout code'
+        uses: actions/checkout@v2
+      - name: 'Byte compile and check for warnings'
+        run: make warnings

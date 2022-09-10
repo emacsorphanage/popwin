@@ -1,7 +1,7 @@
 EMACS ?= emacs
 EASK ?= eask
 
-.PHONY: clean checkdoc lint package install compile test
+.PHONY: clean checkdoc lint package install compile test warnings
 
 ci: clean package install compile
 
@@ -31,3 +31,9 @@ lint:
 
 clean:
 	$(EASK) clean-all
+
+warnings:
+	@emacs -q -batch \
+	  --eval '(setq byte-compile-error-on-warn t)' \
+	  -f batch-byte-compile \
+	  popwin.el
