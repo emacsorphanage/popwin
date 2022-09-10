@@ -81,7 +81,7 @@
     (or (cdr (assq tree map)) tree)))
 
 (defun popwin:get-buffer (buffer-or-name &optional if-not-found)
-  "Return a buffer named BUFFER-OR-NAME or BUFFER-OR-NAME itself \
+  "Return a buffer named BUFFER-OR-NAME or BUFFER-OR-NAME itself
 if BUFFER-OR-NAME is a buffer.  If BUFFER-OR-NAME is a string and
 such a buffer named BUFFER-OR-NAME not found, a new buffer will
 be returned when IF-NOT-FOUND is :create, or an error reported
@@ -95,7 +95,7 @@ is :error."
          (error "No buffer named %s" buffer-or-name)))))
 
 (defun popwin:switch-to-buffer (buffer-or-name &optional norecord)
-  "Call `switch-to-buffer' forcing BUFFER-OR-NAME be displayed in the \
+  "Call `switch-to-buffer' forcing BUFFER-OR-NAME be displayed in the
 selected window.  NORECORD is the same as `switch-to-buffer' NORECORD."
   (with-no-warnings
     (if (>= emacs-major-version 24)
@@ -121,7 +121,7 @@ If WINDOW is currently selected, then return buffer-point instead."
     (window-point window)))
 
 (defun popwin:window-deletable-p (window)
-  "Return t if WINDOW is deletable, meaning that WINDOW is alive \
+  "Return t if WINDOW is deletable, meaning that WINDOW is alive
 and not a minibuffer's window, plus there is two or more windows."
   (and (window-live-p window)
        (not (window-minibuffer-p window))
@@ -136,7 +136,7 @@ and not a minibuffer's window, plus there is two or more windows."
   (minibuffer-window-active-p (selected-window)))
 
 (defun popwin:last-selected-window ()
-  "Return currently selected window or lastly selected window if \
+  "Return currently selected window or lastly selected window if
 minibuffer window is selected."
   (if (popwin:minibuffer-window-selected-p)
       (minibuffer-selected-window)
@@ -207,14 +207,14 @@ HFACTOR, and vertical factor VFACTOR."
                        collect (popwin:window-config-tree-1 window))))))
 
 (defun popwin:window-config-tree ()
-  "Return `window-tree' with replacing window values in the tree \
+  "Return `window-tree' with replacing window values in the tree
 with persistent representations."
   (cl-destructuring-bind (root mini)
       (window-tree)
     (list (popwin:window-config-tree-1 root) mini)))
 
 (defun popwin:replicate-window-config (window node hfactor vfactor)
-  "Replicate NODE of window configuration on WINDOW with \
+  "Replicate NODE of window configuration on WINDOW with
 horizontal factor HFACTOR, and vertical factor VFACTOR.  The
 return value is a association list of mapping from old-window to
 new-window."
@@ -240,7 +240,7 @@ new-window."
                append (popwin:replicate-window-config win sub-node hfactor vfactor)))))
 
 (defun popwin:restore-window-outline (node outline)
-  "Restore window outline accoding to the structures of NODE \
+  "Restore window outline accoding to the structures of NODE
 which is a node of `window-tree' and OUTLINE which is a node of
 `popwin:window-config-tree'."
   (cond
@@ -370,7 +370,7 @@ means the selected frame."
   :group 'popwin)
 
 (defcustom popwin:adjust-other-windows t
-  "Non-nil means all of other windows will be adjusted to fit the \
+  "Non-nil means all of other windows will be adjusted to fit the
 frame when a popup window is shown."
   :type 'boolean
   :group 'popwin)
@@ -745,7 +745,7 @@ The popup window can be closed by `popwin:close-popup-window'."
     (sldb-mode :stick t)
     slime-repl-mode
     slime-connection-list-mode)
-  "Configuration of special displaying buffer for `popwin:display-buffer' and \
+  "Configuration of special displaying buffer for `popwin:display-buffer' and
 `popwin:special-display-popup-window'.  The value is a list of
 CONFIG as a form of (PATTERN . KEYWORDS) where PATTERN is a
 pattern of specifying buffer and KEYWORDS is a list of a pair of
@@ -783,9 +783,9 @@ empty.  Available keywords are following:
   tail: If the value is non-nil, the popup window will show the
     last contents.
 
-Examples: With '(\"*scratch*\" :height 30 :position top),
+Examples: With \\='(\"*scratch*\" :height 30 :position top),
 *scratch* buffer will be shown at the top of the frame with
-height 30. With '(dired-mode :width 80 :position left), dired
+height 30. With \\='(dired-mode :width 80 :position left), dired
 buffers will be shown at the left of the frame with width 80."
   :type '(repeat
           (cons :tag "Config"
@@ -876,7 +876,8 @@ buffers will be shown at the left of the frame with width 80."
     (error "No popup buffer ever")))
 
 (defun popwin:reuse-window-p (buffer-or-name not-this-window)
-  "Return t if a window showing BUFFER-OR-NAME exists and should be used displaying the buffer."
+  "Return t if a window showing BUFFER-OR-NAME exists and should be
+used displaying the buffer."
   (and popwin:reuse-window
        (let ((window (get-buffer-window buffer-or-name
                                         (if (eq popwin:reuse-window 'current)
@@ -970,7 +971,7 @@ This function can be used as a value of
 
 ;;;###autoload
 (defun popwin:pop-to-buffer (buffer &optional other-window norecord)
-  "Same as `pop-to-buffer' except that this function will use \
+  "Same as `pop-to-buffer' except that this function will use
 `popwin:display-buffer-1' instead of `display-buffer'.  BUFFER,
 OTHER-WINDOW amd NORECORD are the same arguments."
   (interactive (list (read-buffer "Pop to buffer: " (other-buffer))
@@ -984,14 +985,14 @@ OTHER-WINDOW amd NORECORD are the same arguments."
 ;;; Universal Display
 
 (defcustom popwin:universal-display-config '(t)
-  "Same as `popwin:special-display-config' except that this will \
+  "Same as `popwin:special-display-config' except that this will
 be used for `popwin:universal-display'."
   :type 'list
   :group 'popwin)
 
 ;;;###autoload
 (defun popwin:universal-display ()
-  "Call the following command interactively with letting \
+  "Call the following command interactively with letting
 `popwin:special-display-config' be `popwin:universal-display-config'.
 This will be useful when displaying buffers in popup windows temporarily."
   (interactive)
@@ -1005,7 +1006,7 @@ This will be useful when displaying buffers in popup windows temporarily."
 
 ;;;###autoload
 (defun popwin:one-window ()
-  "Delete other window than the popup window. C-g restores the original \
+  "Delete other window than the popup window. C-g restores the original
 window configuration."
   (interactive)
   (setq popwin:window-config (current-window-configuration))
@@ -1013,7 +1014,7 @@ window configuration."
 
 ;;;###autoload
 (defun popwin:popup-buffer-tail (&rest same-as-popwin:popup-buffer)
-  "Same as `popwin:popup-buffer' except that the buffer will be \
+  "Same as `popwin:popup-buffer' except that the buffer will be
 `recenter'ed at the bottom."
   (interactive "bPopup buffer:\n")
   (cl-destructuring-bind (buffer . keyargs) same-as-popwin:popup-buffer
