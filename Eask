@@ -2,7 +2,12 @@
          "1.0.2"
          "Popup Window Manager")
 
+(website-url "https://github.com/emacsorphanage/popwin")
+(keywords "convenience")
+
 (package-file "popwin.el")
+
+(script "test" "echo \"Error: no test specified\" && exit 1")
 
 (source "gnu")
 (source "melpa")
