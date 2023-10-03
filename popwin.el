@@ -564,7 +564,8 @@ The all situations where the popup window will be closed are followings:
                 (not popup-window-alive)
                 (and other-window-selected
                      (not minibuf-window-p)
-                     (not popwin:popup-window-stuck-p)))
+                     (not popwin:popup-window-stuck-p))
+                (= (length (window-list)) 1))
         (when popwin:debug
           (message (concat "popwin: CLOSE:\n"
                            "  quit-requested = %s\n"
