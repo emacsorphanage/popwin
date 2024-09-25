@@ -1,8 +1,10 @@
 ;;; popwin.el --- Popup Window Manager
 
 ;; Copyright (C) 2011-2015  Tomohiro Matsuyama
+;; Copyright (C) 202-2024  Jen-Chieh Shen
 
 ;; Author: Tomohiro Matsuyama <m2ym.pub@gmail.com>
+;; Maintainer: Jen-Chieh Shen <jcs090218@gmail.com>
 ;; Keywords: convenience
 ;; Version: 1.0.2
 ;; URL: https://github.com/emacsorphanage/popwin
