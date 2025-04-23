@@ -1,3 +1,5 @@
+;; -*- mode: eask; lexical-binding: t -*-
+
 (package "popwin"
          "1.0.2"
          "Popup Window Manager")
